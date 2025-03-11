@@ -16,10 +16,11 @@ Including another URLconf
 """
 from . import views
 from django.urls import path
+from .views import server1_image
 
 urlpatterns = [
-    path('', views.home, name='home'),         # Interfaz principal alusiva a medicina
-    path('server1/', views.server1, name='server1'),
+    path('', views.home, name='home'),         
+    path('server1-imagen/', server1_image, name='server1_image'),
     path('server2/', views.server2, name='server2'),
     path('server3/', views.server3, name='server3'),
     path('server4/', views.server4, name='server4'),
