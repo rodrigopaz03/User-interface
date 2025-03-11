@@ -1,0 +1,67 @@
+<!-- main_app/templates/main_app/base.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema Médico</title>
+    <!-- Estilos básicos -->
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        header {
+            background-color: #e2f0f9; /* color claro alusivo al tema médico */
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            background-color: #c8e6f5;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            margin: 0 10px;
+            text-decoration: none;
+            font-weight: bold;
+            color: #000;
+        }
+        footer {
+            background-color: #e2f0f9;
+            padding: 10px;
+            text-align: center;
+            position: fixed; /* Esto hará que el footer se mantenga al fondo */
+            bottom: 0;
+            width: 100%;
+        }
+        .container {
+            padding: 20px;
+            margin-bottom: 60px; /* espacio para que no tape el footer */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sistema Médico Central</h1>
+        <p>Bienvenido a la plataforma de administración médica</p>
+    </header>
+
+    <nav>
+        <a href="{% url 'home' %}">Home</a>
+        <a href="{% url 'server1' %}">Servidor 1</a>
+        <a href="{% url 'server2' %}">Servidor 2</a>
+        <a href="{% url 'server3' %}">Servidor 3</a>
+        <a href="{% url 'server4' %}">Servidor 4</a>
+        <a href="{% url 'server5' %}">Servidor 5</a>
+    </nav>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <footer>
+        <p>© 2025 Sistema Médico Central</p>
+    </footer>
+</body>
+</html>
