@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Servidor Exámenes Médicos - Subir Imagen</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f8ff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #4287db;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 40px;
+            text-align: center;
+        }
+        form {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 500px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        input[type="file"] {
+            display: block;
+            margin: 15px auto;
+        }
+        .btn {
+            background-color: #4287db;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background-color: #205aa0;
+        }
+        .message {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Servidor Exámenes Médicos</h1>
+        <p>Sube las imágenes de exámenes médicos</p>
+    </header>
+    <div class="content">
+        {% if message %}
+            <p class="message">{{ message }}</p>
+        {% endif %}
+        <form action="" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <label for="imagen">Selecciona una imagen:</label>
+                <!-- Con accept="image/*" se filtran los tipos de archivo en el navegador -->
+                <input type="file" name="imagen" id="imagen" accept="image/*" required>
+            </p>
+            <button class="btn" type="submit">Subir Imagen</button>
+        </form>
+        <p><a href="{% url 'index' %}">Volver a la Página Principal</a></p>
+    </div>
+</body>
+</html>

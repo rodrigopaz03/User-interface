@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de apoyo al diagnóstico de la epilepsia refractaria</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f8ff;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 40px;
+            text-align: center;
+        }
+        .btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Sistema de apoyo al diagnóstico de la epilepsia refractaria</h1>
+        <p>Bienvenido a la plataforma hospitalaria</p>
+    </header>
+    <div class="content">
+        <h2>Página Principal</h2>
+        <p></p>
+        <a class="btn" href="{% url 'upload_image' %}">Servidor Exámenes Médicos</a>
+    </div>
+</body>
+</html>
