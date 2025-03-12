@@ -27,6 +27,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+SERVER1_URL = 'http://34.46.6.93:8000/upload/'
+
 
 
 # Application definition
