@@ -18,8 +18,7 @@ def upload_image(request):
             files = {
                 'imagen': (archivo.name, archivo.read(), archivo.content_type),
             }
-            # URL del microservicio (en este ejemplo, se asume que corre en localhost:8001)
-            url = getattr(settings, 'SERVER1_URL', 'http://127.0.0.1:8001/upload/')
+            url = getattr(settings, 'SERVER1_URL', 'http://10.128.0.14:8000/upload/')
             try:
                 response = requests.post(url, files=files)
                 if response.status_code == 201:
