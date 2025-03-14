@@ -16,31 +16,28 @@ def upload_image(request):
     if request.method == 'POST':
         archivo = request.FILES.get('imagen')
         if archivo:
-            chunk_size = 1024 * 1024  # 1MB
+            chunk_size = 5 * 1024 * 1024  
             file_size = archivo.size
-            total_chunks = (file_size + chunk_size - 1) // chunk_size  # redondeo hacia arriba
+            total_chunks = (file_size + chunk_size - 1) // chunk_size 
 
-            imagen_id = None  # Se usará para enviar el ID en los chunks siguientes
+            imagen_id = None 
             chunk_index = 0
 
-            # Iteramos sobre cada chunk del archivo
             for chunk in archivo.chunks(chunk_size):
                 data = {
                     'chunk_index': str(chunk_index),
                     'total_chunks': str(total_chunks),
                 }
-                # En el primer chunk, enviamos título y content_type
                 if chunk_index == 0:
                     data['titulo'] = archivo.name
                     data['content_type'] = archivo.content_type
                 else:
-                    # En los siguientes, enviamos el id de la imagen creada previamente
                     data['imagen_id'] = imagen_id
 
                 files = {
                     'imagen': (archivo.name, chunk, archivo.content_type),
                 }
-                url = getattr(settings, 'SERVER1_URL', 'http://10.128.0.14:8000/upload_chunk/')
+                url = getattr(settings, 'SERVER1_URL', 'http://10.128.0.14:8000/upload/')
                 try:
                     response = requests.post(url, data=data, files=files)
                 except Exception as e:
@@ -48,7 +45,6 @@ def upload_image(request):
                     break
 
                 if response.status_code == 201:
-                    # En la primera petición se espera recibir el imagen_id
                     if chunk_index == 0:
                         imagen_id = response.json().get('imagen_id')
                         if not imagen_id:
