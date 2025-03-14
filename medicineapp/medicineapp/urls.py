@@ -19,5 +19,5 @@ from core.views import index, upload_image
 
 urlpatterns = [
     path('', index, name='index'),
-    path('upload_chunk/', upload_image, name='upload_image_chunk'),
+    path('upload/', upload_image, name='upload_image'),
 ]

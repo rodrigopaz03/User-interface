@@ -59,7 +59,8 @@
         {% if message %}
             <p class="message">{{ message }}</p>
         {% endif %}
-        <form action="" method="POST" enctype="multipart/form-data">
+        <!-- Se usa la etiqueta {% url 'upload_image' %} para definir el action -->
+        <form action="{% url 'upload_image' %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <p>
                 <label for="imagen">Selecciona una imagen:</label>
