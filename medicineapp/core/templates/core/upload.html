@@ -48,6 +48,11 @@
             font-size: 16px;
             margin-bottom: 20px;
         }
+        .note {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -68,6 +73,10 @@
             </p>
             <button class="btn" type="submit">Subir Imagen</button>
         </form>
+        <p class="note">
+            Nota: el servidor maneja la carga de archivos de gran tamaño en trozos (chunks) 
+            y los procesa de forma concurrente para optimizar el tiempo de subida.
+        </p>
         <p><a href="{% url 'index' %}">Volver a la Página Principal</a></p>
     </div>
 </body>
