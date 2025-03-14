@@ -1,13 +1,16 @@
 import requests
 from django.shortcuts import render
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
+@csrf_exempt  
 def index(request):
     """
     Página principal con tema hospitalario y botón para ir al servidor de exámenes.
     """
     return render(request, 'core/index.html')
 
+@csrf_exempt  
 def upload_image(request):
     message = ''
     if request.method == 'POST':
