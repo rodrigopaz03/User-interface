@@ -21,7 +21,7 @@ def upload_image(request):
             files = {
                 'imagen': (archivo.name, archivo.read(), archivo.content_type),
             }
-            url = getattr(settings, 'SERVER1_URL', 'http://10.128.0.14:8080/upload/')
+            url = getattr(settings, 'SERVER1_URL', 'http://10.128.0.8:8080/upload/')
             try:
                 response = requests.post(url, files=files)
                 if response.status_code == 201:
