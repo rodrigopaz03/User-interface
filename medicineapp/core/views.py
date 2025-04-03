@@ -19,8 +19,8 @@ def upload_image(request):
         if archivo:
             # Preparamos la petición POST para enviar el archivo al microservicio
             files = {
-                'imagen': (archivo.name, archivo.read(), archivo.content_type),
-            }
+  'imagen': (archivo.name, archivo, archivo.content_type)  # sin .read()
+}
             url = getattr(settings, 'SERVER1_URL')
             try:
                 response = requests.post(url, files=files)
