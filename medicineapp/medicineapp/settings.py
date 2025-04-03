@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-SERVER1_URL = 'http://335.224.224.127:8080/upload/'
+SERVER1_URL = 'http://34.111.38.236:8080/upload/'
 
 
 
