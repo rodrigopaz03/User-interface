@@ -34,18 +34,21 @@ def upload_image(request):
             message = 'No se recibió ningún archivo'
     return render(request, 'core/upload.html', {'message': message})
 
+@csrf_exempt  
 def pacientes_menu(request):
     """
     Menú de opciones para gestión de pacientes e historias.
     """
     return render(request, 'core/pacientes.html')
 
+@csrf_exempt  
 def paciente_nuevo(request):
     """
     Vista para registrar un nuevo paciente (y su historia inicial).
     """
     return render(request, 'core/paciente_crear.html')
 
+@csrf_exempt  
 def historial_form(request):
     """
     Vista que combina consulta y edición de historia clínica de un paciente.
