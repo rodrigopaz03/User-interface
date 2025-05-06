@@ -34,15 +34,20 @@ def upload_image(request):
             message = 'No se recibió ningún archivo'
     return render(request, 'core/upload.html', {'message': message})
 
-def ui_pacientes(request):
+def pacientes_menu(request):
     """
-    Renderiza la interfaz de usuario para crear y listar pacientes.
+    Menú de opciones para gestión de pacientes e historias.
     """
     return render(request, 'core/pacientes.html')
 
-
-def ui_historias(request):
+def paciente_nuevo(request):
     """
-    Renderiza la interfaz de usuario para crear y listar historias clínicas.
+    Vista para registrar un nuevo paciente (y su historia inicial).
+    """
+    return render(request, 'core/paciente_crear.html')
+
+def historial_form(request):
+    """
+    Vista que combina consulta y edición de historia clínica de un paciente.
     """
     return render(request, 'core/historias.html')
