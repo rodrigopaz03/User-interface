@@ -1,49 +1,81 @@
+<!-- File: core/templates/core/index.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema de apoyo al diagnóstico de la epilepsia refractaria</title>
+    <title>Home - Plataforma Hospitalaria</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f1f8ff;
             margin: 0;
-            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #eef6fb;
+            color: #333;
         }
         header {
-            background-color: #007bff;
+            background-color: #0056b3;
             color: #fff;
-            padding: 20px;
+            padding: 30px 20px;
             text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .content {
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        .home-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 60px 20px;
+        }
+        .server-card {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             padding: 40px;
+            margin: 20px;
             text-align: center;
+            width: 300px;
+        }
+        .server-card h2 {
+            margin-top: 0;
+            color: #0056b3;
         }
         .btn {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 24px;
             background-color: #007bff;
             color: #fff;
-            border: none;
-            padding: 15px 30px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
             text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
         }
         .btn:hover {
             background-color: #0056b3;
+        }
+        .servers {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
         }
     </style>
 </head>
 <body>
     <header>
-        <h1>Sistema de apoyo al diagnóstico de la epilepsia refractaria</h1>
-        <p>Bienvenido a la plataforma hospitalaria</p>
+        <h1>Plataforma Hospitalaria</h1>
+        <p>Bienvenido - Selecciona un servicio</p>
     </header>
-    <div class="content">
-        <h2>Página Principal</h2>
-        <p></p>
-        <a class="btn" href="{% url 'upload_image' %}">Servidor Exámenes Médicos</a>
+    <div class="home-content">
+        <div class="servers">
+            <div class="server-card">
+                <h2>Exámenes Médicos</h2>
+                <a href="{% url 'upload_image' %}" class="btn">Ir al servidor</a>
+            </div>
+            <div class="server-card">
+                <h2>Gestión de pacientes</h2>
+                <a href="{% url 'ui_pacientes' %}" class="btn">Ir al servidor</a>
+            </div>
+        </div>
     </div>
-</body>
-</html>

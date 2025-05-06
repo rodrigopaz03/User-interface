@@ -33,3 +33,16 @@ def upload_image(request):
         else:
             message = 'No se recibió ningún archivo'
     return render(request, 'core/upload.html', {'message': message})
+
+def ui_pacientes(request):
+    """
+    Renderiza la interfaz de usuario para crear y listar pacientes.
+    """
+    return render(request, 'core/pacientes.html')
+
+
+def ui_historias(request):
+    """
+    Renderiza la interfaz de usuario para crear y listar historias clínicas.
+    """
+    return render(request, 'core/historias.html')

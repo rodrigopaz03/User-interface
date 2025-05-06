@@ -1,0 +1,43 @@
+<!-- File: core/templates/core/pacientes.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel de Pacientes</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #eef6fb; color: #333; }
+        header { background-color: #0056b3; color: #fff; padding: 30px 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        header h1 { margin: 0; font-size: 1.8em; }
+        header p { margin-top: 8px; font-size: 1em; }
+        .menu-content { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; padding: 60px 20px; }
+        .menu-card { background-color: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 30px; margin: 15px; text-align: center; width: 280px; }
+        .menu-card h2 { margin-top: 0; color: #0056b3; font-size: 1.3em; }
+        .menu-card p { margin: 10px 0; font-size: 0.95em; }
+        .btn { display: inline-block; margin-top: 15px; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px; transition: background-color 0.2s ease; }
+        .btn:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Panel de Gestión de Pacientes</h1>
+        <p>Selecciona la acción deseada</p>
+    </header>
+    <div class="menu-content">
+        <div class="menu-card">
+            <h2>Registrar Paciente</h2>
+            <p>Alta de nuevo paciente con historia clínica inicial.</p>
+            <a href="{% url 'paciente_nuevo' %}" class="btn">Registrar</a>
+        </div>
+        <div class="menu-card">
+            <h2>Consultar Historia Clínica</h2>
+            <p>Visualiza el historial médico completo de un paciente existente.</p>
+            <a href="{% url 'pacientes_consultar' %}" class="btn">Consultar</a>
+        </div>
+        <div class="menu-card">
+            <h2>Actualizar Historia Clínica</h2>
+            <p>Modifica datos o notas de la historia de un paciente.</p>
+            <a href="{% url 'pacientes_actualizar' %}" class="btn">Actualizar</a>
+        </div>
+    </div>
+</body>
+</html>

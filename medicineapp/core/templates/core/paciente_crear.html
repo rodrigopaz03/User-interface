@@ -1,0 +1,65 @@
+<!-- File: core/templates/core/pacientes_nuevo.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Nuevo Paciente</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #eef6fb; color: #333; }
+        header { background-color: #0056b3; color: #fff; padding: 30px 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .content { padding: 40px; max-width: 600px; margin: auto; }
+        form { display: flex; flex-direction: column; }
+        input, select { padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { margin-top: 15px; padding: 12px; background-color: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+        .btn:hover { background-color: #0056b3; }
+        .message { margin-top: 20px; font-style: italic; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Registrar Nuevo Paciente</h1>
+    </header>
+    <div class="content">
+        <form id="paciente-form">
+            <input name="identificacion" placeholder="Identificación" required />
+            <input name="nombre" placeholder="Nombre" required />
+            <input name="apellido" placeholder="Apellido" required />
+            <input name="fecha_nacimiento" type="date" required />
+            <select name="sexo" required>
+                <option value="">Sexo…</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+            </select>
+            <input name="telefono" placeholder="Teléfono" />
+            <input name="email" type="email" placeholder="Email" />
+            <button class="btn" type="submit">Registrar Paciente</button>
+        </form>
+        <div class="message" id="message"></div>
+    </div>
+    <script>
+    document.getElementById('paciente-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const form = e.target;
+        const payload = {
+            identificacion: form.identificacion.value,
+            nombre:          form.nombre.value,
+            apellido:        form.apellido.value,
+            fecha_nacimiento: form.fecha_nacimiento.value,
+            sexo:             form.sexo.value,
+            telefono:         form.telefono.value,
+            email:            form.email.value
+        };
+        const res = await fetch('/api/pacientes/', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const msg = document.getElementById('message');
+        if (res.ok) {
+            msg.textContent = 'Paciente registrado con éxito.';
+            form.reset();
+        } else {
+            const err = await res.json();
+            msg.textContent = 'Error: ' + JSON.stringify(err);
+        }
+    });
+    </script>

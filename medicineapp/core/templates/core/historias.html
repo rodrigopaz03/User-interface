@@ -1,0 +1,113 @@
+<!-- File: core/templates/core/historial_form.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historia Clínica del Paciente</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #eef6fb; color: #333; }
+        header { background-color: #0056b3; color: #fff; padding: 30px 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .content { padding: 40px; max-width: 600px; margin: auto; }
+        label, textarea, input, select { display: block; width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { height: 120px; resize: vertical; }
+        .btn { margin-top: 15px; padding: 12px; background-color: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+        .btn:hover { background-color: #0056b3; }
+        .message { margin-top: 20px; font-style: italic; }
+        .details { background: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Gestión de Historia Clínica</h1>
+    </header>
+    <div class="content">
+        <label for="paciente-select">Selecciona Paciente:</label>
+        <select id="paciente-select"><option value="">Cargando...</option></select>
+
+        <div id="historial-details" class="details" style="display:none;">
+            <h2>Detalle Actual</h2>
+            <p><strong>ID Historia:</strong> <span id="hist-id"></span></p>
+            <p><strong>Fecha Apertura:</strong> <span id="hist-fecha"></span></p>
+            <p><strong>Médico:</strong> <span id="hist-medico"></span></p>
+            <p><strong>Descripción:</strong> <span id="hist-desc"></span></p>
+        </div>
+
+        <div id="historial-form-container" style="display:none;">
+            <h2>Editar Historia Clínica</h2>
+            <form id="historia-form">
+                <textarea name="descripcion" placeholder="Descripción"></textarea>
+                <input name="medico_responsable" placeholder="Médico Responsable" />
+                <input name="updated_by" placeholder="Actualizado por" />
+                <button class="btn" type="submit">Guardar Cambios</button>
+            </form>
+            <div class="message" id="historia-message"></div>
+        </div>
+    </div>
+    <script>
+    let currentHistoriaId = null;
+
+    async function loadPacientes() {
+        const sel = document.getElementById('paciente-select');
+        const res = await fetch('/api/pacientes/');
+        const data = await res.json();
+        sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
+        data.results.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = `${p.identificacion} – ${p.nombre} ${p.apellido}`;
+            sel.appendChild(opt);
+        });
+    }
+
+    document.getElementById('paciente-select').addEventListener('change', async e => {
+        const pacienteId = e.target.value;
+        if (!pacienteId) return;
+
+        const res = await fetch(`/api/historias/?paciente=${pacienteId}`);
+        const data = await res.json();
+        if (data.results.length === 0) {
+            document.getElementById('historial-details').style.display = 'none';
+            document.getElementById('historial-form-container').style.display = 'none';
+            return;
+        }
+        const h = data.results[0];
+        currentHistoriaId = h.id;
+        document.getElementById('hist-id').textContent = h.id;
+        document.getElementById('hist-fecha').textContent = new Date(h.fecha_apertura).toLocaleString();
+        document.getElementById('hist-medico').textContent = h.medico_responsable;
+        document.getElementById('hist-desc').textContent = h.descripcion;
+        document.getElementById('historial-details').style.display = 'block';
+
+        // Pre-fill form
+        document.historiaForm.descripcion.value = h.descripcion;
+        document.historiaForm.medico_responsable.value = h.medico_responsable;
+        document.historiaForm.updated_by.value = '';
+        document.getElementById('historial-form-container').style.display = 'block';
+    });
+
+    document.getElementById('historia-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        if (!currentHistoriaId) return;
+        const form = e.target;
+        const payload = {
+            descripcion: form.descripcion.value,
+            medico_responsable: form.medico_responsable.value,
+            updated_by: form.updated_by.value
+        };
+        const res = await fetch(`/api/historias/${currentHistoriaId}/`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const msg = document.getElementById('historia-message');
+        if (res.ok) {
+            msg.textContent = 'Historia clínica actualizada correctamente.';
+            document.getElementById('paciente-select').dispatchEvent(new Event('change'));
+        } else {
+            const err = await res.json(); msg.textContent = 'Error: ' + JSON.stringify(err);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadPacientes);
+    </script>
+</body>
+</html>
