@@ -48,12 +48,12 @@ def paciente_nuevo(request):
     """
     Vista para registrar un nuevo paciente (y su historia inicial).
     """
-    return render(request, 'core/historial_form.html', {
+    return render(request, 'core/paciente_crear.html', {
         'SERVER2_URL': settings.SERVER2_URL
     })
 
 @csrf_exempt  
 def historial_form(request):
-    return render(request, 'core/historial_form.html', {
+    return render(request, 'core/historias.html', {
         'SERVER2_URL': settings.SERVER2_URL
     })
