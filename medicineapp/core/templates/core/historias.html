@@ -68,6 +68,7 @@
             // Recrea las opciones
             sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
             data.results.forEach(p => {
+              console.log("🔍 paciente raw:", p);
               const opt = document.createElement('option');
               opt.value       = p.id; 
               opt.textContent = `${p.identificacion} – ${p.nombre} ${p.apellido}`;
