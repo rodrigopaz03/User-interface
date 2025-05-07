@@ -47,21 +47,19 @@
     </div>
 
     <script>
-    console.log("📄 historial_form cargado");
-    console.log("🔗 API_BASE es:", API_BASE);
-    document.addEventListener('DOMContentLoaded', () => {
-        // 1) API_BASE debe inyectarlo tu view:
-        //    return render(..., {'SERVER2_URL': settings.SERVER2_URL})
-        const API_BASE = "{{ SERVER2_URL }}";  
-        console.log("API_BASE →", API_BASE);
+      // DEFINICIÓN DE API_BASE
+      const API_BASE = "{{ SERVER2_URL }}";
+      console.log("📄 historias.html cargado");
+      console.log("🔗 API_BASE →", API_BASE);
 
+      document.addEventListener('DOMContentLoaded', () => {
         const sel     = document.getElementById('paciente-select');
         const details = document.getElementById('historial-details');
         const formC   = document.getElementById('historial-form-container');
         const form    = document.getElementById('historia-form');
         let currentHistoriaId = null;
 
-        // 2) Carga los pacientes
+        // Carga inicial de pacientes
         fetch(`${API_BASE}pacientes/`)
           .then(r => r.json())
           .then(data => {
@@ -69,13 +67,13 @@
             sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
             data.results.forEach(p => {
               const opt = document.createElement('option');
-              opt.value = p.id;  // aquí se fija el ID correcto
+              opt.value = p.id;
               opt.textContent = `${p.identificacion} – ${p.nombre} ${p.apellido}`;
               sel.appendChild(opt);
             });
           });
 
-        // 3) Al cambiar de paciente
+        // Al cambiar de paciente
         sel.addEventListener('change', () => {
           const pacienteId = sel.value;
           console.log("Paciente seleccionado:", pacienteId);
@@ -83,14 +81,10 @@
             details.style.display = formC.style.display = 'none';
             return;
           }
-
           const url = `${API_BASE}historias/?paciente=${pacienteId}`;
           console.log("Fetch URL historias:", url);
           fetch(url)
-            .then(r => {
-              console.log("Status historia GET:", r.status);
-              return r.json();
-            })
+            .then(r => { console.log("Status historia GET:", r.status); return r.json(); })
             .then(data => {
               console.log("Historias recibidas:", data.results);
               if (data.results.length === 0) {
@@ -99,12 +93,10 @@
               }
               const h = data.results[0];
               currentHistoriaId = h.id;
-
               document.getElementById('hist-id').textContent    = h.id;
               document.getElementById('hist-fecha').textContent = new Date(h.fecha_apertura).toLocaleString();
               document.getElementById('hist-medico').textContent= h.medico_responsable;
               document.getElementById('hist-desc').textContent  = h.descripcion;
-
               details.style.display = 'block';
               form.descripcion.value        = h.descripcion;
               form.medico_responsable.value = h.medico_responsable;
@@ -113,11 +105,10 @@
             });
         });
 
-        // 4) Submit para actualizar la historia
+        // Submit para actualizar la historia
         form.addEventListener('submit', e => {
           e.preventDefault();
           if (!currentHistoriaId) return;
-
           const payload = {
             descripcion:        form.descripcion.value,
             medico_responsable: form.medico_responsable.value,
@@ -142,9 +133,10 @@
             document.getElementById('historia-message').textContent = 'Error: ' + JSON.stringify(err);
           });
         });
-    });
+      });
     </script>
 </body>
 </html>
+
 
 
