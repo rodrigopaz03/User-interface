@@ -15,6 +15,12 @@
         .message { margin-top: 20px; font-style: italic; }
         .details { background: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
     </style>
+
+    <script>
+      // Inyecta aquí SERVER2_URL (asegúrate de que termine en '/')
+      const API_BASE = "{{ SERVER2_URL }}";
+      console.log("API_BASE →", API_BASE);
+    </script>
 </head>
 <body>
     <header>
@@ -22,7 +28,9 @@
     </header>
     <div class="content">
         <label for="paciente-select">Selecciona Paciente:</label>
-        <select id="paciente-select"><option value="">Cargando...</option></select>
+        <select id="paciente-select">
+            <option value="">Cargando...</option>
+        </select>
 
         <div id="historial-details" class="details" style="display:none;">
             <h2>Detalle Actual</h2>
@@ -45,15 +53,16 @@
     </div>
 
     <script>
-    // URL base de la API, inyectada desde settings: SERVER2_URL
-    const API_BASE = "{{ SERVER2_URL }}";
-
     let currentHistoriaId = null;
 
     async function loadPacientes() {
+        console.log("Cargando pacientes…");
         const sel = document.getElementById('paciente-select');
         const res = await fetch(`${API_BASE}pacientes/`);
+        console.log("Status pacientes GET:", res.status);
         const data = await res.json();
+        console.log("Pacientes recibidos:", data.results);
+
         sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
         data.results.forEach(p => {
             const opt = document.createElement('option');
@@ -63,58 +72,75 @@
         });
     }
 
-    document.getElementById('paciente-select').addEventListener('change', async e => {
-        const pacienteId = e.target.value;
-        if (!pacienteId) return;
+    document.addEventListener('DOMContentLoaded', () => {
+        const sel = document.getElementById('paciente-select');
+        sel.addEventListener('change', async () => {
+            const pacienteId = sel.value;
+            console.log("Paciente seleccionado:", pacienteId);
+            if (!pacienteId) return;
 
-        const res = await fetch(`${API_BASE}historias/?paciente=${pacienteId}`);
-        const data = await res.json();
-        if (data.results.length === 0) {
-            document.getElementById('historial-details').style.display = 'none';
-            document.getElementById('historial-form-container').style.display = 'none';
-            return;
-        }
-        const h = data.results[0];
-        currentHistoriaId = h.id;
-        document.getElementById('hist-id').textContent = h.id;
-        document.getElementById('hist-fecha').textContent = new Date(h.fecha_apertura).toLocaleString();
-        document.getElementById('hist-medico').textContent = h.medico_responsable;
-        document.getElementById('hist-desc').textContent = h.descripcion;
-        document.getElementById('historial-details').style.display = 'block';
+            const url = `${API_BASE}historias/?paciente=${pacienteId}`;
+            console.log("Fetch a URL:", url);
 
-        // Pre-fill form
-        const form = document.getElementById('historia-form');
-        form.descripcion.value = h.descripcion;
-        form.medico_responsable.value = h.medico_responsable;
-        form.updated_by.value = '';
-        document.getElementById('historial-form-container').style.display = 'block';
-    });
+            const res = await fetch(url);
+            console.log("Status historia GET:", res.status);
+            const data = await res.json();
+            console.log("Historias recibidas:", data.results);
 
-    document.getElementById('historia-form').addEventListener('submit', async e => {
-        e.preventDefault();
-        if (!currentHistoriaId) return;
-        const form = document.getElementById('historia-form');
-        const payload = {
-            descripcion: form.descripcion.value,
-            medico_responsable: form.medico_responsable.value,
-            updated_by: form.updated_by.value
-        };
-        const res = await fetch(`${API_BASE}historias/${currentHistoriaId}/`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            if (data.results.length === 0) {
+                document.getElementById('historial-details').style.display = 'none';
+                document.getElementById('historial-form-container').style.display = 'none';
+                return;
+            }
+
+            const h = data.results[0];
+            currentHistoriaId = h.id;
+
+            document.getElementById('hist-id').textContent    = h.id;
+            document.getElementById('hist-fecha').textContent = new Date(h.fecha_apertura).toLocaleString();
+            document.getElementById('hist-medico').textContent= h.medico_responsable;
+            document.getElementById('hist-desc').textContent  = h.descripcion;
+
+            document.getElementById('historial-details').style.display = 'block';
+
+            const form = document.getElementById('historia-form');
+            form.descripcion.value          = h.descripcion;
+            form.medico_responsable.value   = h.medico_responsable;
+            form.updated_by.value           = '';
+            document.getElementById('historial-form-container').style.display = 'block';
         });
-        const msg = document.getElementById('historia-message');
-        if (res.ok) {
-            msg.textContent = 'Historia clínica actualizada correctamente.';
-            document.getElementById('paciente-select').dispatchEvent(new Event('change'));
-        } else {
-            const err = await res.json();
-            msg.textContent = 'Error: ' + JSON.stringify(err);
-        }
-    });
 
-    document.addEventListener('DOMContentLoaded', loadPacientes);
+        document.getElementById('historia-form').addEventListener('submit', async e => {
+            e.preventDefault();
+            if (!currentHistoriaId) return;
+
+            const form = document.getElementById('historia-form');
+            const payload = {
+                descripcion:        form.descripcion.value,
+                medico_responsable: form.medico_responsable.value,
+                updated_by:         form.updated_by.value
+            };
+
+            const res = await fetch(`${API_BASE}historias/${currentHistoriaId}/`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            console.log("Status historia PATCH:", res.status);
+            const msg = document.getElementById('historia-message');
+            if (res.ok) {
+                msg.textContent = 'Historia clínica actualizada correctamente.';
+                sel.dispatchEvent(new Event('change'));
+            } else {
+                const err = await res.json();
+                msg.textContent = 'Error: ' + JSON.stringify(err);
+            }
+        });
+
+        loadPacientes();
+    });
     </script>
 </body>
 </html>
+
