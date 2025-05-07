@@ -47,7 +47,7 @@
     </div>
 
     <script>
-      // DEFINICIÓN DE API_BASE
+      // 1) DEFINE API_BASE ANTES DE NADA
       const API_BASE = "{{ SERVER2_URL }}";
       console.log("📄 historias.html cargado");
       console.log("🔗 API_BASE →", API_BASE);
@@ -59,21 +59,27 @@
         const form    = document.getElementById('historia-form');
         let currentHistoriaId = null;
 
-        // Carga inicial de pacientes
+        // 2) Carga los pacientes
         fetch(`${API_BASE}pacientes/`)
           .then(r => r.json())
           .then(data => {
             console.log("Pacientes recibidos:", data.results);
+
+            // Recrea las opciones
             sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
             data.results.forEach(p => {
               const opt = document.createElement('option');
-              opt.value = p.id;
+              opt.value       = p.id; 
               opt.textContent = `${p.identificacion} – ${p.nombre} ${p.apellido}`;
               sel.appendChild(opt);
             });
+
+            // LOG: muestra todas las opciones creadas
+            console.log("Opciones en select:",
+                        Array.from(sel.options).map(o => ({value:o.value,text:o.textContent})));
           });
 
-        // Al cambiar de paciente
+        // 3) Al cambiar de paciente
         sel.addEventListener('change', () => {
           const pacienteId = sel.value;
           console.log("Paciente seleccionado:", pacienteId);
@@ -81,13 +87,15 @@
             details.style.display = formC.style.display = 'none';
             return;
           }
+
           const url = `${API_BASE}historias/?paciente=${pacienteId}`;
           console.log("Fetch URL historias:", url);
+
           fetch(url)
             .then(r => { console.log("Status historia GET:", r.status); return r.json(); })
             .then(data => {
               console.log("Historias recibidas:", data.results);
-              if (data.results.length === 0) {
+              if (!data.results.length) {
                 details.style.display = formC.style.display = 'none';
                 return;
               }
@@ -105,7 +113,7 @@
             });
         });
 
-        // Submit para actualizar la historia
+        // 4) Submit para actualizar la historia
         form.addEventListener('submit', e => {
           e.preventDefault();
           if (!currentHistoriaId) return;
@@ -116,6 +124,7 @@
           };
           const patchUrl = `${API_BASE}historias/${currentHistoriaId}/`;
           console.log("PATCH URL:", patchUrl, payload);
+
           fetch(patchUrl, {
             method:  'PATCH',
             headers: {'Content-Type':'application/json'},
@@ -137,6 +146,7 @@
     </script>
 </body>
 </html>
+
 
 
 
