@@ -39,7 +39,7 @@ def pacientes_menu(request):
     """
     Menú de opciones para gestión de pacientes e historias.
     """
-    return render(request, 'core/pacientes_nuevo.html', {
+    return render(request, 'core/pacientes.html', {
         'SERVER2_URL': settings.SERVER2_URL
     })
 
