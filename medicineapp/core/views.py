@@ -39,18 +39,21 @@ def pacientes_menu(request):
     """
     Menú de opciones para gestión de pacientes e historias.
     """
-    return render(request, 'core/pacientes.html')
+    return render(request, 'core/pacientes_nuevo.html', {
+        'SERVER2_URL': settings.SERVER2_URL
+    })
 
 @csrf_exempt  
 def paciente_nuevo(request):
     """
     Vista para registrar un nuevo paciente (y su historia inicial).
     """
-    return render(request, 'core/paciente_crear.html')
+    return render(request, 'core/historial_form.html', {
+        'SERVER2_URL': settings.SERVER2_URL
+    })
 
 @csrf_exempt  
 def historial_form(request):
-    """
-    Vista que combina consulta y edición de historia clínica de un paciente.
-    """
-    return render(request, 'core/historias.html')
+    return render(request, 'core/historial_form.html', {
+        'SERVER2_URL': settings.SERVER2_URL
+    })

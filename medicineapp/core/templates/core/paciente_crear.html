@@ -20,6 +20,11 @@
         <h1>Registrar Nuevo Paciente</h1>
     </header>
     <div class="content">
+        <!-- API_BASE inyectada desde settings -->
+        <script>
+          const API_BASE = "{{ SERVER2_URL }}";
+        </script>
+
         <form id="paciente-form">
             <input name="identificacion" placeholder="Identificación" required />
             <input name="nombre" placeholder="Nombre" required />
@@ -36,6 +41,7 @@
         </form>
         <div class="message" id="message"></div>
     </div>
+
     <script>
     document.getElementById('paciente-form').addEventListener('submit', async e => {
         e.preventDefault();
@@ -49,8 +55,9 @@
             telefono:         form.telefono.value,
             email:            form.email.value
         };
-        const res = await fetch('/api/pacientes/', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(`${API_BASE}pacientes/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const msg = document.getElementById('message');
@@ -63,3 +70,5 @@
         }
     });
     </script>
+</body>
+</html>

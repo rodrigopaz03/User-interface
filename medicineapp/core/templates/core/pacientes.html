@@ -22,21 +22,28 @@
         <h1>Panel de Gestión de Pacientes</h1>
         <p>Selecciona la acción deseada</p>
     </header>
+
+    <!-- Inyectamos la URL base de la API de Historias Clínicas -->
+    <script>
+      const API_BASE = "{{ SERVER2_URL }}";
+      console.log('API_BASE:', API_BASE);
+    </script>
+
     <div class="menu-content">
         <div class="menu-card">
             <h2>Registrar Paciente</h2>
             <p>Alta de nuevo paciente con historia clínica inicial.</p>
-            <a href="{% url 'paciente_nuevo' %}" class="btn">Registrar</a>
+            <a href="{% url 'paciente_nuevo' %}" class="btn">Registrar Paciente</a>
         </div>
         <div class="menu-card">
             <h2>Consultar Historia Clínica</h2>
             <p>Visualiza el historial médico completo de un paciente existente.</p>
-            <a href="{% url 'pacientes_consultar' %}" class="btn">Consultar</a>
+            <a href="{% url 'pacientes_consultar' %}" class="btn">Consultar Historia Clínica</a>
         </div>
         <div class="menu-card">
             <h2>Actualizar Historia Clínica</h2>
             <p>Modifica datos o notas de la historia de un paciente.</p>
-            <a href="{% url 'pacientes_actualizar' %}" class="btn">Actualizar</a>
+            <a href="{% url 'pacientes_actualizar' %}" class="btn">Actualizar Historia Clínica</a>
         </div>
     </div>
 </body>

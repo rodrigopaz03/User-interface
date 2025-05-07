@@ -43,12 +43,16 @@
             <div class="message" id="historia-message"></div>
         </div>
     </div>
+
     <script>
+    // URL base de la API, inyectada desde settings: SERVER2_URL
+    const API_BASE = "{{ SERVER2_URL }}";
+
     let currentHistoriaId = null;
 
     async function loadPacientes() {
         const sel = document.getElementById('paciente-select');
-        const res = await fetch('/api/pacientes/');
+        const res = await fetch(`${API_BASE}pacientes/`);
         const data = await res.json();
         sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
         data.results.forEach(p => {
@@ -63,7 +67,7 @@
         const pacienteId = e.target.value;
         if (!pacienteId) return;
 
-        const res = await fetch(`/api/historias/?paciente=${pacienteId}`);
+        const res = await fetch(`${API_BASE}historias/?paciente=${pacienteId}`);
         const data = await res.json();
         if (data.results.length === 0) {
             document.getElementById('historial-details').style.display = 'none';
@@ -79,23 +83,25 @@
         document.getElementById('historial-details').style.display = 'block';
 
         // Pre-fill form
-        document.historiaForm.descripcion.value = h.descripcion;
-        document.historiaForm.medico_responsable.value = h.medico_responsable;
-        document.historiaForm.updated_by.value = '';
+        const form = document.getElementById('historia-form');
+        form.descripcion.value = h.descripcion;
+        form.medico_responsable.value = h.medico_responsable;
+        form.updated_by.value = '';
         document.getElementById('historial-form-container').style.display = 'block';
     });
 
     document.getElementById('historia-form').addEventListener('submit', async e => {
         e.preventDefault();
         if (!currentHistoriaId) return;
-        const form = e.target;
+        const form = document.getElementById('historia-form');
         const payload = {
             descripcion: form.descripcion.value,
             medico_responsable: form.medico_responsable.value,
             updated_by: form.updated_by.value
         };
-        const res = await fetch(`/api/historias/${currentHistoriaId}/`, {
-            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        const res = await fetch(`${API_BASE}historias/${currentHistoriaId}/`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const msg = document.getElementById('historia-message');
@@ -103,7 +109,8 @@
             msg.textContent = 'Historia clínica actualizada correctamente.';
             document.getElementById('paciente-select').dispatchEvent(new Event('change'));
         } else {
-            const err = await res.json(); msg.textContent = 'Error: ' + JSON.stringify(err);
+            const err = await res.json();
+            msg.textContent = 'Error: ' + JSON.stringify(err);
         }
     });
 

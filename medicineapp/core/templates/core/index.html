@@ -67,16 +67,29 @@
         <h1>Plataforma Hospitalaria</h1>
         <p>Bienvenido - Selecciona un servicio</p>
     </header>
+
+    <!-- Inyectamos las URLs de los microservicios desde settings -->
+    <script>
+      const SERVER1_URL = "{{ SERVER1_URL }}";  // Servicio de Exámenes Médicos
+      const SERVER2_URL = "{{ SERVER2_URL }}";  // Servicio de Historias Clínicas
+      console.log('Microservicios:', SERVER1_URL, SERVER2_URL);
+    </script>
+
     <div class="home-content">
         <div class="servers">
             <div class="server-card">
                 <h2>Exámenes Médicos</h2>
+                <p>Sube y consulta imágenes de exámenes médicos.</p>
+                <!-- UI interna que usa SERVER1_URL para proxy -->
                 <a href="{% url 'upload_image' %}" class="btn">Ir al servidor</a>
             </div>
             <div class="server-card">
-                <h2>Gestión de pacientes</h2>
+                <h2>Gestión de Pacientes</h2>
+                <p>Administra pacientes e historias clínicas.</p>
+                <!-- UI interna que usa SERVER2_URL para proxy -->
                 <a href="{% url 'pacientes_menu' %}" class="btn">Ir al servidor</a>
-
             </div>
         </div>
     </div>
+</body>
+</html>
