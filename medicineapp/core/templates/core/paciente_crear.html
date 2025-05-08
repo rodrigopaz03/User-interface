@@ -61,37 +61,34 @@
     <script>
     const form = document.getElementById('paciente-form');
     form.addEventListener('submit', async e => {
-        e.preventDefault();
-        const payload = {
-            identificacion:   form.identificacion.value,
-            nombre:           form.nombre.value,
-            apellido:         form.apellido.value,
-            fecha_nacimiento: form.fecha_nacimiento.value,
-            sexo:             form.sexo.value,
-            telefono:         form.telefono.value,
-            email:            form.email.value
-        };
+    e.preventDefault();
+    const payload = {
+        identificacion:   form.identificacion.value,
+        nombre:           form.nombre.value,
+        apellido:         form.apellido.value,
+        fecha_nacimiento: form.fecha_nacimiento.value,
+        sexo:             form.sexo.value,
+        telefono:         form.telefono.value,
+        email:            form.email.value
+    };
 
-        const msg = document.getElementById('message');
-        msg.classList.remove("success", "error"); // Limpiar clases previas
-
-        const res = await fetch(`${API_BASE}pacientes/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (res.ok) {
-            msg.textContent = 'Paciente registrado con éxito.';
-            msg.classList.add('success');
-            form.reset();
-        } else {
-            const err = await res.json();
-            msg.textContent = 'Error: ' + (err.detail || 'Error desconocido');
-            msg.classList.add('error');
-            console.error('Error al registrar paciente:', err); // Log de error en la consola
-        }
+    const res = await fetch(`${API_BASE}pacientes/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
     });
+
+    const msg = document.getElementById('message');
+    if (res.ok) {
+        msg.textContent = 'Paciente registrado con éxito.';
+        form.reset();
+    } else {
+        const err = await res.json();
+        console.log('Error detallado:', err); // Imprime el error detallado en la consola
+        msg.textContent = 'Error: ' + (err.detail || err.message || 'Error desconocido');
+    }
+});
+
     </script>
 </body>
 </html>
