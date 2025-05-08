@@ -1,7 +1,10 @@
+from django.http import HttpResponse
 import requests
 from django.shortcuts import render
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
+from medicineapp.auth0backend import getRole
+from django.contrib.auth.decorators import login_required
 
 @csrf_exempt  
 def index(request):
@@ -35,13 +38,18 @@ def upload_image(request):
     return render(request, 'core/upload.html', {'message': message})
 
 @csrf_exempt  
+@login_required
 def pacientes_menu(request):
     """
     Menú de opciones para gestión de pacientes e historias.
     """
-    return render(request, 'core/pacientes.html', {
-        'SERVER2_URL': settings.SERVER2_URL
-    })
+    role = getRole(request)
+    if role == "medico" or role == "enfermera":
+        return render(request, 'core/pacientes.html', {
+            'SERVER2_URL': settings.SERVER2_URL
+        })
+    else:
+        return HttpResponse("Unauthorized User")
 
 @csrf_exempt  
 def paciente_nuevo(request):
