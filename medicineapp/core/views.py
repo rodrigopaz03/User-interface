@@ -78,19 +78,34 @@ def callback(request):
     code = request.GET.get('code')
     if not code:
         return redirect('/login')
-    token = "simulated_token"
+
+    # Preparar el payload para obtener el token
+    token_url = f'https://{settings.AUTH0_DOMAIN}/oauth/token'
     payload = {
-        'sub': 'auth0|123456',
-        'email': 'user@example.com',
-        'name': 'Test User',
-        f'https://{settings.AUTH0_DOMAIN}/roles': ['medico']  # Simulamos que es médico
+        'client_id': settings.AUTH0_CLIENT_ID,
+        'client_secret': settings.AUTH0_CLIENT_SECRET,
+        'code': code,
+        'grant_type': 'authorization_code',
+        'redirect_uri': settings.AUTH0_CALLBACK_URL,
     }
     
-    request.session['user_payload'] = payload
-    request.session['access_token'] = token
+    try:
+        # Hacer la solicitud POST para obtener el token
+        response = requests.post(token_url, json=payload)
+        response.raise_for_status()  # Levanta un error si la respuesta no es 2xx
+        token_data = response.json()
+        access_token = token_data.get('access_token')
+
+        # Guardar el token en la sesión
+        request.session['access_token'] = access_token
+
+        # Redirigir al estado pasado (página de destino post-login)
+        next_url = request.GET.get('state', '/')
+        return redirect(next_url)
     
-    next_url = request.GET.get('state', '/')
-    return redirect(next_url)
+    except requests.exceptions.RequestException as e:
+        # Manejar errores de la solicitud
+        return HttpResponse(f"Error al obtener el token de acceso: {e}", status=500)
 
 def logout(request):
     request.session.flush()
