@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -30,17 +30,15 @@ ALLOWED_HOSTS = ['*']
 SERVER1_URL = 'http://34.8.244.158:8080/upload/'
 SERVER2_URL = 'http://34.56.24.195:8080/registro/'
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',  # Necesario para sessions
+    'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',     # Nuevo: Requerido para autenticación
+    'django.contrib.sites',
     'core',
     'corsheaders',
 ]
@@ -48,7 +46,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',  # Para manejo de sesiones
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -57,27 +55,27 @@ MIDDLEWARE = [
 ]
 
 # Configuración de Auth0
-AUTH0_DOMAIN = 'genai-8832202947885035.us.auth0.com'  # Reemplazar con tu dominio real
-AUTH0_CLIENT_ID = 'MepPntI6UQ6M94bgSivMsA38fouscaGu'       # Reemplazar con tu Client ID
-AUTH0_CLIENT_SECRET = 'v4nN-bJx6IW-mg_sPEm7gXsZWxBVw10PWp5b5XtaFdohtgWPdva42VVPV3DUvUHh'  # Reemplazar con tu Client Secret
-AUTH0_CALLBACK_URL = 'http://localhost:8080/callback'  # Ajustar en producción
+AUTH0_DOMAIN = 'genai-8832202947885035.us.auth0.com'
+AUTH0_CLIENT_ID = 'MepPntI6UQ6M94bgSivMsA38fouscaGu'
+AUTH0_CLIENT_SECRET = 'v4nN-bJx6IW-mg_sPEm7gXsZWxBVw10PWp5b5XtaFdohtgWPdva42VVPV3DUvUHh'
+AUTH0_CALLBACK_URL = 'http://localhost:8080/callback'
 AUTH0_AUDIENCE = f'https://{AUTH0_DOMAIN}/api/v2/'
 AUTH0_SCOPE = 'openid profile email'
 
 # Configuración de autenticación
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # Mantener el backend por defecto
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 # Configuración de sesiones
-SESSION_COOKIE_SECURE = not DEBUG  # True en producción (requiere HTTPS)
-SESSION_COOKIE_HTTPONLY = True     # Previene acceso a cookies via JavaScript
-SESSION_COOKIE_SAMESITE = 'Lax'    # Balance entre seguridad y usabilidad
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 # URLs de autenticación
-LOGIN_URL = '/login'                # URL para redirigir usuarios no autenticados
-LOGIN_REDIRECT_URL = '/'           # URL después de login exitoso
-LOGOUT_REDIRECT_URL = '/'          # URL después de logout
+LOGIN_URL = '/login'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -101,10 +99,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'medicineapp.wsgi.application'
 
-
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -112,10 +107,7 @@ DATABASES = {
     }
 }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -131,30 +123,68 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
+# Static files
 STATIC_URL = 'static/'
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
-# Configuración del sitio (requerido para django.contrib.sites)
-SITE_ID = 1  # Usualmente 1 para el sitio por defecto
+# Configuración del sitio
+SITE_ID = 1
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django_errors.log'),
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
+# Crear directorio de logs si no existe
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
