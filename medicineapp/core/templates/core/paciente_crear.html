@@ -84,10 +84,14 @@
         form.reset();
     } else {
         const err = await res.json();
-        console.log('Error detallado:', err); // Imprime el error detallado en la consola
-        msg.textContent = 'Error: ' + (err.detail || err.message || 'Error desconocido');
+        if (err.identificacion) {
+            msg.textContent = 'Error: ' + err.identificacion[0];  // Muestra el error de identificación
+        } else {
+            msg.textContent = 'Error: ' + JSON.stringify(err);  // Muestra otros errores
+        }
     }
 });
+
 
     </script>
 </body>
