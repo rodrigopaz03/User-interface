@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'social_django'
 ]
 
-LOGIN_URL = "//login/auth0"
+LOGIN_URL = "/login/auth0"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "https://dev-1z63nyizcs7ivvpz.us.auth0.com/v2/logout?returnTo=http%3A%2F%2F34.59.135.18:8080"
 
