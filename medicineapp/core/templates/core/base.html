@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Sistema Hospitalario{% endblock %}</title>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+</head>
+<body>
+    <header>
+        {% if request.session.user_payload %}
+            <p>Bienvenido, {{ request.session.user_payload.name }} 
+               ({{ request.session.user_payload.email }})</p>
+            <a href="{% url 'logout' %}">Cerrar sesión</a>
+        {% else %}
+            <a href="{% url 'login' %}">Iniciar sesión</a>
+        {% endif %}
+    </header>
+    
+    {% block content %}{% endblock %}
+    
+    <script>
+        const auth0 = new Auth0Client({
+            domain: '{{ settings.AUTH0_DOMAIN }}',
+            client_id: '{{ settings.AUTH0_CLIENT_ID }}',
+            audience: '{{ settings.AUTH0_AUDIENCE }}'
+        });
+        
+        async function checkAuth() {
+            const isAuthenticated = await auth0.isAuthenticated();
+            if (!isAuthenticated) {
+                await auth0.loginWithRedirect({
+                    redirect_uri: window.location.origin
+                });
+            }
+        }
+        
+        // Verificar autenticación al cargar
+        checkAuth();
+    </script>
+</body>
+</html>

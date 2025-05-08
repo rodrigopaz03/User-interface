@@ -31,31 +31,53 @@ SERVER1_URL = 'http://34.8.244.158:8080/upload/'
 SERVER2_URL = 'http://34.56.24.195:8080/registro/'
 
 
-
 # Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
+    'django.contrib.sessions',  # Necesario para sessions
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',     # Nuevo: Requerido para autenticación
     'core',
     'corsheaders',
 ]
 
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',  # Para manejo de sesiones
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# Configuración de Auth0
+AUTH0_DOMAIN = 'genai-8832202947885035.us.auth0.com'  # Reemplazar con tu dominio real
+AUTH0_CLIENT_ID = 'MepPntI6UQ6M94bgSivMsA38fouscaGu'       # Reemplazar con tu Client ID
+AUTH0_CLIENT_SECRET = 'v4nN-bJx6IW-mg_sPEm7gXsZWxBVw10PWp5b5XtaFdohtgWPdva42VVPV3DUvUHh'  # Reemplazar con tu Client Secret
+AUTH0_CALLBACK_URL = 'http://localhost:8080/callback'  # Ajustar en producción
+AUTH0_AUDIENCE = f'https://{AUTH0_DOMAIN}/api/v2/'
+AUTH0_SCOPE = 'openid profile email'
+
+# Configuración de autenticación
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',  # Mantener el backend por defecto
+]
+
+# Configuración de sesiones
+SESSION_COOKIE_SECURE = not DEBUG  # True en producción (requiere HTTPS)
+SESSION_COOKIE_HTTPONLY = True     # Previene acceso a cookies via JavaScript
+SESSION_COOKIE_SAMESITE = 'Lax'    # Balance entre seguridad y usabilidad
+
+# URLs de autenticación
+LOGIN_URL = '/login'                # URL para redirigir usuarios no autenticados
+LOGIN_REDIRECT_URL = '/'           # URL después de login exitoso
+LOGOUT_REDIRECT_URL = '/'          # URL después de logout
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -132,4 +154,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = None  
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
+
+# Configuración del sitio (requerido para django.contrib.sites)
+SITE_ID = 1  # Usualmente 1 para el sitio por defecto
