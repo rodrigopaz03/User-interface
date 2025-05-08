@@ -31,7 +31,7 @@ SERVER1_URL = 'http://34.8.244.158:8080/upload/'
 SERVER2_URL = 'http://34.173.186.95:8080/registro/'
 
 
-
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 # Application definition
 
 INSTALLED_APPS = [
