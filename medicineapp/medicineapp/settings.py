@@ -45,6 +45,27 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
+LOGIN_URL = "//login/auth0"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "https://dev-rhxcxn7gnidznu06.us.auth0.com/v2/logout?returnTo=http%3A%2F%2F34.59.135.18:8080"
+
+SOCIAL_AUTH_TRAILING_SLASH = False  # Remove end slash from routes
+SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-rhxcxn7gnidznu06.us.auth0.com'
+SOCIAL_AUTH_AUTH0_KEY = '5EvwIEgW6RhrDvNuu4Tdf25VqElvYa33'
+SOCIAL_AUTH_AUTH0_SECRET = 'K2r7Y2LaXOuEEwkOKswgBLcAIuA5Y3RbRKCAQ5_QoiKKPxIDeTpVyp6M5FJRrnHc'
+
+SOCIAL_AUTH_AUTH0_SCOPE = [
+    'openid',
+    'profile',
+    'email',
+    'role',
+]
+
+AUTHENTICATION_BACKENDS = {
+    'medicineapp.auth0backend.Auth0',
+    'django.contrib.auth.backends.ModelBackend',
+}
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
