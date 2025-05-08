@@ -44,7 +44,7 @@ INSTALLED_APPS = [
 ]
 
 # Configuración del modelo de usuario personalizado
-AUTH_USER_MODEL = 'core.User'  # Debe estar después de INSTALLED_APPS
+AUTH_USER_MODEL = 'core.User'  
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
