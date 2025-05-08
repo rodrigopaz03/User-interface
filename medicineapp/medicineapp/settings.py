@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'corsheaders',
 ]
 
+# Configuración del modelo de usuario personalizado
+AUTH_USER_MODEL = 'core.User'  # Debe estar después de INSTALLED_APPS
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware', 
     'django.middleware.security.SecurityMiddleware',

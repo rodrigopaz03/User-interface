@@ -24,3 +24,6 @@ class User(AbstractUser):
         related_name='core_user_permissions', 
         related_query_name='user',
     )
+    class Meta:
+        # Evita conflictos con el modelo auth.User
+        swappable = 'AUTH_USER_MODEL'
