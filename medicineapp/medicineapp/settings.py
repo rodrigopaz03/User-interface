@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 SERVER1_URL = 'http://35.225.154.203:8080/upload/'
-SERVER2_URL = 'http://34.171.216.141:8080/registro/'
+SERVER2_URL = 'http://34.45.188.27:8080/registro/'
 
 # Application definition
 INSTALLED_APPS = [
