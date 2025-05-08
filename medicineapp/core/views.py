@@ -111,7 +111,7 @@ def logout(request):
     request.session.flush()
     query_params = urlencode({
         'client_id': settings.AUTH0_CLIENT_ID,
-        'returnTo': settings.LOGOUT_REDIRECT_URL,
+        'returnTo': settings.LOGOUT_REDIRECT0_URL,
     })
     return redirect(f'https://{settings.AUTH0_DOMAIN}/v2/logout?{query_params}')
 
