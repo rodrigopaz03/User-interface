@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'core',
     'corsheaders',
+    'social_django'
 ]
 
 LOGIN_URL = "//login/auth0"
