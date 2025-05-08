@@ -84,15 +84,19 @@
         form.reset();
     } else {
         const err = await res.json();
-        if (err.identificacion) {
-            msg.textContent = 'Error: ' + err.identificacion[0];  // Muestra el error de identificación
+        
+        // Verificar si es un error de base de datos
+        if (err.non_field_errors && err.non_field_errors.includes("No se pudo guardar el paciente correctamente en la base de datos.")) {
+            msg.textContent = 'Error: No se pudo guardar el paciente en la base de datos. Intente nuevamente más tarde.';
+        }
+        // Si es otro tipo de error, muestra el detalle
+        else if (err.identificacion) {
+            msg.textContent = 'Error: ' + err.identificacion[0];
         } else {
-            msg.textContent = 'Error: ' + JSON.stringify(err);  // Muestra otros errores
+            msg.textContent = 'Error: ' + JSON.stringify(err);
         }
     }
-});
-
-
+}); 
     </script>
 </body>
 </html>
