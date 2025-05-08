@@ -61,7 +61,7 @@ MIDDLEWARE = [
 AUTH0_DOMAIN = 'genai-8832202947885035.us.auth0.com'
 AUTH0_CLIENT_ID = 'MepPntI6UQ6M94bgSivMsA38fouscaGu'
 AUTH0_CLIENT_SECRET = 'v4nN-bJx6IW-mg_sPEm7gXsZWxBVw10PWp5b5XtaFdohtgWPdva42VVPV3DUvUHh'
-AUTH0_CALLBACK_URL = 'http://localhost:8080/callback'
+AUTH0_CALLBACK_URL = 'http://34.171.216.141:8080/callback'
 AUTH0_AUDIENCE = f'https://{AUTH0_DOMAIN}/api/v2/'
 AUTH0_SCOPE = 'openid profile email'
 
