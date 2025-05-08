@@ -63,13 +63,13 @@
     form.addEventListener('submit', async e => {
     e.preventDefault();
     const payload = {
-        identificacion:   form.identificacion.value,
-        nombre:           form.nombre.value,
-        apellido:         form.apellido.value,
+        identificacion: form.identificacion.value,
+        nombre: form.nombre.value,
+        apellido: form.apellido.value,
         fecha_nacimiento: form.fecha_nacimiento.value,
-        sexo:             form.sexo.value,
-        telefono:         form.telefono.value,
-        email:            form.email.value
+        sexo: form.sexo.value,
+        telefono: form.telefono.value,
+        email: form.email.value
     };
 
     const res = await fetch(`${API_BASE}pacientes/`, {
@@ -86,13 +86,11 @@
         const err = await res.json();
         
         // Verificar si es un error de base de datos
-        if (err.non_field_errors && err.non_field_errors.includes("No se pudo guardar el paciente correctamente en la base de datos.")) {
+        if (err.non_field_errors) {
             msg.textContent = 'Error: No se pudo guardar el paciente en la base de datos. Intente nuevamente más tarde.';
         }
         // Si es otro tipo de error, muestra el detalle
-        else if (err.identificacion) {
-            msg.textContent = 'Error: ' + err.identificacion[0];
-        } else {
+        else {
             msg.textContent = 'Error: ' + JSON.stringify(err);
         }
     }
