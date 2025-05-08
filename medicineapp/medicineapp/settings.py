@@ -48,12 +48,12 @@ INSTALLED_APPS = [
 
 LOGIN_URL = "//login/auth0"
 LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "https://dev-rhxcxn7gnidznu06.us.auth0.com/v2/logout?returnTo=http%3A%2F%2F34.59.135.18:8080"
+LOGOUT_REDIRECT_URL = "https://dev-1z63nyizcs7ivvpz.us.auth0.com/v2/logout?returnTo=http%3A%2F%2F34.59.135.18:8080"
 
 SOCIAL_AUTH_TRAILING_SLASH = False  # Remove end slash from routes
-SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-rhxcxn7gnidznu06.us.auth0.com'
-SOCIAL_AUTH_AUTH0_KEY = '5EvwIEgW6RhrDvNuu4Tdf25VqElvYa33'
-SOCIAL_AUTH_AUTH0_SECRET = 'K2r7Y2LaXOuEEwkOKswgBLcAIuA5Y3RbRKCAQ5_QoiKKPxIDeTpVyp6M5FJRrnHc'
+SOCIAL_AUTH_AUTH0_DOMAIN = 'dev-1z63nyizcs7ivvpz.us.auth0.com'
+SOCIAL_AUTH_AUTH0_KEY = 'M4lZR33IE6OXNQBxFyjCGi64q0X1o25X'
+SOCIAL_AUTH_AUTH0_SECRET = '_51rNVcCr7ccnljwOF5p74D7N1uUd7qE2noBbTwnaoM1GaO1aD5u2dAm93_Walbw'
 
 SOCIAL_AUTH_AUTH0_SCOPE = [
     'openid',
