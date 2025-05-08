@@ -68,9 +68,10 @@
 <body>
     <header>
         <h1>Panel de Gestión de Pacientes</h1>
-        <a href="{% url 'logout' %}" class="logout-btn" method="POST">
-            Cerrar sesión
-        </a>
+        <form action="{% url 'logout' %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">Cerrar sesión</button>
+        </form>
     </header>
 
     <!-- Inyectamos la URL base de la API de Historias Clínicas -->

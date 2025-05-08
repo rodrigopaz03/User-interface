@@ -20,6 +20,6 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),  # Incluye las URLs definidas en core
-    path(r'', include('django.contrib.auth.urls')),
-    path(r'', include('social_django.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),  # Prefijo para las rutas de autenticación
+    path('social/', include('social_django.urls')),  # Prefijo para las rutas de social login (Auth0, por ejemplo)
 ]
