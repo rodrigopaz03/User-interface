@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 from .auth0_helper import validate_token, get_or_create_user
 from .decorators import login_required, role_required
 import json
-
+@login_required
 def index(request):
     return render(request, 'core/index.html')
 
