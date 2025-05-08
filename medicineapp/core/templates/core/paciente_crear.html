@@ -1,4 +1,3 @@
-<!-- File: core/templates/core/pacientes_nuevo.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,7 +12,9 @@
         input, select { padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius: 4px; }
         .btn { margin-top: 20px; padding: 12px; background-color: #007bff; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
         .btn:hover { background-color: #0056b3; }
-        .message { margin-top: 20px; font-style: italic; }
+        .message { margin-top: 20px; font-style: italic; font-size: 1.2em; }
+        .success { color: green; }
+        .error { color: red; }
     </style>
     <script>
       const API_BASE = "{{ SERVER2_URL }}";
@@ -56,6 +57,7 @@
         </form>
         <div class="message" id="message"></div>
     </div>
+
     <script>
     const form = document.getElementById('paciente-form');
     form.addEventListener('submit', async e => {
@@ -70,19 +72,24 @@
             email:            form.email.value
         };
 
+        const msg = document.getElementById('message');
+        msg.classList.remove("success", "error"); // Limpiar clases previas
+
         const res = await fetch(`${API_BASE}pacientes/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        const msg = document.getElementById('message');
         if (res.ok) {
             msg.textContent = 'Paciente registrado con éxito.';
+            msg.classList.add('success');
             form.reset();
         } else {
             const err = await res.json();
-            msg.textContent = 'Error: ' + JSON.stringify(err);
+            msg.textContent = 'Error: ' + (err.detail || 'Error desconocido');
+            msg.classList.add('error');
+            console.error('Error al registrar paciente:', err); // Log de error en la consola
         }
     });
     </script>

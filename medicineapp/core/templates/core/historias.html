@@ -1,4 +1,3 @@
-<!-- File: core/templates/core/historias.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -14,6 +13,8 @@
         .btn:hover { background-color: #0056b3; }
         .message { margin-top: 20px; font-style: italic; }
         .details { background: #fff; padding: 20px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .error { color: red; }
+        .success { color: green; }
     </style>
 </head>
 <body>
@@ -78,6 +79,12 @@
             // LOG: muestra todas las opciones creadas
             console.log("Opciones en select:",
                         Array.from(sel.options).map(o => ({value:o.value,text:o.textContent})));
+          })
+          .catch(err => {
+            const msg = document.getElementById('historia-message');
+            msg.textContent = 'Error al cargar los pacientes. Intente nuevamente más tarde.';
+            msg.classList.add('error');
+            console.error('Error al cargar pacientes:', err);
           });
 
         // 3) Al cambiar de paciente
@@ -93,7 +100,10 @@
           console.log("Fetch URL historias:", url);
 
           fetch(url)
-            .then(r => { console.log("Status historia GET:", r.status); return r.json(); })
+            .then(r => { 
+              console.log("Status historia GET:", r.status); 
+              return r.json(); 
+            })
             .then(data => {
               console.log("Historias recibidas:", data.results);
               if (!data.results.length) {
@@ -111,6 +121,12 @@
               form.medico_responsable.value = h.medico_responsable;
               form.updated_by.value         = '';
               formC.style.display           = 'block';
+            })
+            .catch(err => {
+              const msg = document.getElementById('historia-message');
+              msg.textContent = 'Error al cargar la historia clínica. Intente nuevamente más tarde.';
+              msg.classList.add('error');
+              console.error('Error al cargar historia clínica:', err);
             });
         });
 
@@ -133,21 +149,20 @@
           })
           .then(r => {
             console.log("Status PATCH:", r.status);
-            return r.ok ? r : r.json().then(err=>{throw err;});
+            return r.ok ? r : r.json().then(err => { throw err; });
           })
           .then(() => {
             document.getElementById('historia-message').textContent = 'Historia clínica actualizada correctamente.';
+            document.getElementById('historia-message').classList.add('success');
             sel.dispatchEvent(new Event('change'));
           })
           .catch(err => {
             document.getElementById('historia-message').textContent = 'Error: ' + JSON.stringify(err);
+            document.getElementById('historia-message').classList.add('error');
+            console.error('Error al actualizar historia clínica:', err);
           });
         });
       });
     </script>
 </body>
 </html>
-
-
-
-
