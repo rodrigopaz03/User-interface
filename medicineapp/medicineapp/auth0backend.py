@@ -23,6 +23,7 @@ class Auth0(BaseOAuth2):
         return details['user_id']
 
     def get_user_details(self, response):
+        print(response)
         url = 'https://' + self.setting('DOMAIN') + '/userinfo'
         headers = {'authorization': 'Bearer ' + response['access_token']}
         resp = requests.get(url, headers=headers)
