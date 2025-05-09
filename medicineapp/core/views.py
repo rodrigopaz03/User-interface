@@ -56,12 +56,20 @@ def paciente_nuevo(request):
     """
     Vista para registrar un nuevo paciente (y su historia inicial).
     """
-    return render(request, 'core/paciente_crear.html', {
-        'SERVER2_URL': settings.SERVER2_URL
-    })
+    role = getRole(request)
+    if role == "medico" or role == "enfermera":
+        return render(request, 'core/paciente_crear.html', {
+            'SERVER2_URL': settings.SERVER2_URL
+        })
+    else:
+        return HttpResponse("Unauthorized User")
 
 @csrf_exempt  
 def historial_form(request):
-    return render(request, 'core/historias.html', {
-        'SERVER2_URL': settings.SERVER2_URL
-    })
+    role = getRole(request)
+    if role == "medico" or role == "enfermera":
+        return render(request, 'core/historias.html', {
+            'SERVER2_URL': settings.SERVER2_URL
+        })
+    else:
+        return HttpResponse("Unauthorized User")
