@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+{% block title %}Consultar Historia Clínica{% endblock %}
+{% block content %}
+  <h2>Consultar Historia Clínica</h2>
+  <label for="paciente">Seleccione paciente:</label>
+  <select id="paciente"></select>
+  <div id="datos-historia" style="margin-top:1em;">
+    <!-- aquí inyectaremos con JS los <p> de cada campo -->
+  </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const API = "{{ API_BASE }}";
+const sel = document.getElementById('paciente');
+const out = document.getElementById('datos-historia');
+
+// 1) Cargar lista de pacientes
+fetch(`${API}pacientes/`)
+  .then(r => r.json())
+  .then(js => {
+    js.results.forEach(p => {
+      sel.innerHTML += `<option value="${p.id}">${p.nombre} ${p.apellido}</option>`;
+    });
+  });
+
+// 2) Al cambiar paciente, pedir su historia
+sel.addEventListener('change', () => {
+  out.innerHTML = '';
+  fetch(`${API}historias/?paciente=${sel.value}`)
+    .then(r => r.json())
+    .then(js => {
+      if (!js.results.length) {
+        out.innerHTML = '<p>No existe historia para este paciente.</p>';
+        return;
+      }
+      const h = js.results[0];
+      for (let k of ['fecha_apertura','descripcion','medico_responsable','updated_at']) {
+        out.innerHTML += `<p><strong>${k.replace('_',' ')}:</strong> ${h[k] || '—'}</p>`;
+      }
+    });
+});
+</script>
+{% endblock %}

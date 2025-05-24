@@ -7,7 +7,8 @@ from .views import (
     upload_image,
     pacientes_menu,
     paciente_nuevo,
-    historial_form,
+    historia_actualizar,
+    historia_consulta
 )
 
 urlpatterns = [
@@ -15,9 +16,8 @@ urlpatterns = [
     path('upload/',             upload_image,     name='upload_image'),
     path('pacientes/',          pacientes_menu,   name='pacientes_menu'),
     path('pacientes/nuevo/',    paciente_nuevo,   name='paciente_nuevo'),
-    path('pacientes/historial/',historial_form,   name='historial_form'),
-    path('pacientes/consultar/', historial_form,   name='pacientes_consultar'),
-    path('pacientes/actualizar/',historial_form,   name='pacientes_actualizar'),
+    path('pacientes/consultar/', historia_consulta,   name='pacientes_consultar'),
+    path('pacientes/actualizar/',  historia_actualizar,  name='pacientes_actualizar'),
 
 ]
 

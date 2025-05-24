@@ -64,12 +64,25 @@ def paciente_nuevo(request):
     else:
         return HttpResponse("Unauthorized User")
 
-@csrf_exempt  
-def historial_form(request):
+@login_required
+@csrf_exempt
+def historia_consulta(request):
     role = getRole(request)
-    if role == "medico" or role == "enfermera":
-        return render(request, 'core/historias.html', {
-            'SERVER2_URL': settings.SERVER2_URL
-        })
-    else:
-        return HttpResponse("Unauthorized User")
+    if role not in ('medico','enfermera'):
+        return HttpResponse("Unauthorized", status=403)
+
+    # Solo renderizamos la plantilla; el JS la llenará vía GET
+    return render(request, 'core/historias_consulta.html', {
+        'API_BASE': settings.SERVER2_URL
+    })
+
+@login_required
+@csrf_exempt
+def historia_actualizar(request):
+    role = getRole(request)
+    if role not in ('medico','enfermera'):
+        return HttpResponse("Unauthorized", status=403)
+
+    return render(request, 'core/historias_actualizar.html', {
+        'API_BASE': settings.SERVER2_URL
+    })
