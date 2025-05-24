@@ -1,10 +1,7 @@
-from django.http import HttpResponse
-import requests
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
-from medicineapp.auth0backend import getRole
-from django.contrib.auth.decorators import login_required
+import requests
 
 @csrf_exempt  
 def index(request):
@@ -22,8 +19,8 @@ def upload_image(request):
         if archivo:
             # Preparamos la petición POST para enviar el archivo al microservicio
             files = {
-  'imagen': (archivo.name, archivo, archivo.content_type)  # sin .read()
-}
+                'imagen': (archivo.name, archivo, archivo.content_type)
+            }
             url = getattr(settings, 'SERVER1_URL')
             try:
                 response = requests.post(url, files=files)
@@ -38,51 +35,37 @@ def upload_image(request):
     return render(request, 'core/upload.html', {'message': message})
 
 @csrf_exempt  
-@login_required
 def pacientes_menu(request):
     """
     Menú de opciones para gestión de pacientes e historias.
     """
-    role = getRole(request)
-    if role == "medico" or role == "enfermera":
-        return render(request, 'core/pacientes.html', {
-            'SERVER2_URL': settings.SERVER2_URL
-        })
-    else:
-        return HttpResponse("Unauthorized User")
+    return render(request, 'core/pacientes.html', {
+        'SERVER2_URL': settings.SERVER2_URL
+    })
 
 @csrf_exempt  
 def paciente_nuevo(request):
     """
     Vista para registrar un nuevo paciente (y su historia inicial).
     """
-    role = getRole(request)
-    if role == "medico" or role == "enfermera":
-        return render(request, 'core/paciente_crear.html', {
-            'SERVER2_URL': settings.SERVER2_URL
-        })
-    else:
-        return HttpResponse("Unauthorized User")
+    return render(request, 'core/paciente_crear.html', {
+        'SERVER2_URL': settings.SERVER2_URL
+    })
 
-@login_required
 @csrf_exempt
 def historia_consulta(request):
-    role = getRole(request)
-    if role not in ('medico','enfermera'):
-        return HttpResponse("Unauthorized", status=403)
-
-    # Solo renderizamos la plantilla; el JS la llenará vía GET
+    """
+    Página de consulta de historias clínicas (solo lectura).
+    """
     return render(request, 'core/historias_consulta.html', {
         'API_BASE': settings.SERVER2_URL
     })
 
-@login_required
 @csrf_exempt
 def historia_actualizar(request):
-    role = getRole(request)
-    if role not in ('medico','enfermera'):
-        return HttpResponse("Unauthorized", status=403)
-
+    """
+    Página para actualizar historias clínicas.
+    """
     return render(request, 'core/historias_actualizar.html', {
         'API_BASE': settings.SERVER2_URL
     })
