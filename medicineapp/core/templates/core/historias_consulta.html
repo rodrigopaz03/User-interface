@@ -1,44 +1,79 @@
-{% extends "core/base.html" %}
-{% block title %}Consultar Historia Clínica{% endblock %}
-{% block content %}
-  <h2>Consultar Historia Clínica</h2>
-  <label for="paciente">Seleccione paciente:</label>
-  <select id="paciente"></select>
-  <div id="datos-historia" style="margin-top:1em;">
-    <!-- aquí inyectaremos con JS los <p> de cada campo -->
-  </div>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Consultar Historia Clínica</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #eef6fb; color: #333; }
+        header { background-color: #0056b3; color: #fff; padding: 30px 20px; text-align: center;
+                 box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .content { padding: 40px; max-width: 600px; margin: auto; }
+        label, select { display: block; width: 100%; padding: 10px; margin: 8px 0;
+                        border: 1px solid #ccc; border-radius: 4px; }
+        .details { background: #fff; padding: 20px; border-radius: 5px;
+                   box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Consultar Historia Clínica</h1>
+    </header>
+    <div class="content">
+        <label for="paciente-select">Selecciona Paciente:</label>
+        <select id="paciente-select">
+            <option value="">Cargando...</option>
+        </select>
 
-{% block scripts %}
-<script>
-const API = "{{ API_BASE }}";
-const sel = document.getElementById('paciente');
-const out = document.getElementById('datos-historia');
+        <div id="historial-details" class="details" style="display:none;">
+            <h2>Detalle de la Historia</h2>
+            <p><strong>ID Historia:</strong> <span id="hist-id"></span></p>
+            <p><strong>Fecha Apertura:</strong> <span id="hist-fecha"></span></p>
+            <p><strong>Médico Responsable:</strong> <span id="hist-medico"></span></p>
+            <p><strong>Descripción:</strong> <span id="hist-desc"></span></p>
+        </div>
+    </div>
 
-// 1) Cargar lista de pacientes
-fetch(`${API}pacientes/`)
-  .then(r => r.json())
-  .then(js => {
-    js.results.forEach(p => {
-      sel.innerHTML += `<option value="${p.id}">${p.nombre} ${p.apellido}</option>`;
-    });
-  });
+    <script>
+      // Base de la API inyectada desde la vista
+      const API_BASE = "{{ SERVER2_URL }}";
+      document.addEventListener('DOMContentLoaded', () => {
+        const sel     = document.getElementById('paciente-select');
+        const details = document.getElementById('historial-details');
 
-// 2) Al cambiar paciente, pedir su historia
-sel.addEventListener('change', () => {
-  out.innerHTML = '';
-  fetch(`${API}historias/?paciente=${sel.value}`)
-    .then(r => r.json())
-    .then(js => {
-      if (!js.results.length) {
-        out.innerHTML = '<p>No existe historia para este paciente.</p>';
-        return;
-      }
-      const h = js.results[0];
-      for (let k of ['fecha_apertura','descripcion','medico_responsable','updated_at']) {
-        out.innerHTML += `<p><strong>${k.replace('_',' ')}:</strong> ${h[k] || '—'}</p>`;
-      }
-    });
-});
-</script>
-{% endblock %}
+        // 1) Cargar lista de pacientes
+        fetch(`${API_BASE}pacientes/`)
+          .then(r => r.json())
+          .then(data => {
+            sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
+            data.results.forEach(p => {
+              sel.innerHTML += `<option value="${p.id}">${p.identificacion} – ${p.nombre} ${p.apellido}</option>`;
+            });
+          });
+
+        // 2) Al cambiar paciente, obtener su historia
+        sel.addEventListener('change', () => {
+          const pid = sel.value;
+          if (!pid) {
+            details.style.display = 'none';
+            return;
+          }
+          fetch(`${API_BASE}historias/?paciente=${pid}`)
+            .then(r => r.json())
+            .then(js => {
+              if (!js.results.length) {
+                details.style.display = 'none';
+                return;
+              }
+              const h = js.results[0];
+              document.getElementById('hist-id').textContent    = h.id;
+              document.getElementById('hist-fecha').textContent = new Date(h.fecha_apertura).toLocaleString();
+              document.getElementById('hist-medico').textContent= h.medico_responsable;
+              document.getElementById('hist-desc').textContent  = h.descripcion || '—';
+              details.style.display = 'block';
+            });
+        });
+      });
+    </script>
+</body>
+</html>
+

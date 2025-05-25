@@ -1,89 +1,124 @@
-{% extends "core/base.html" %}
-{% block title %}Actualizar Historia Clínica{% endblock %}
-{% block content %}
-  <h2>Actualizar Historia Clínica</h2>
-  <label for="paciente">Seleccione paciente:</label>
-  <select id="paciente"></select>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Actualizar Historia Clínica</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #eef6fb; color: #333; }
+        header { background-color: #0056b3; color: #fff; padding: 30px 20px; text-align: center;
+                 box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .content { padding: 40px; max-width: 600px; margin: auto; }
+        label, textarea, input, select { display: block; width: 100%; padding: 10px; margin: 8px 0;
+                                          border: 1px solid #ccc; border-radius: 4px; }
+        textarea { height: 120px; resize: vertical; }
+        .btn { margin-top: 15px; padding: 12px; background-color: #007bff; color: #fff;
+               border: none; border-radius: 5px; cursor: pointer; font-size: 1em; }
+        .btn:hover { background-color: #0056b3; }
+        .message { margin-top: 20px; font-style: italic; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Actualizar Historia Clínica</h1>
+    </header>
+    <div class="content">
+        <label for="paciente-select">Selecciona Paciente:</label>
+        <select id="paciente-select">
+            <option value="">Cargando...</option>
+        </select>
 
-  <form id="form-historia" style="margin-top:1em;">
-    <div>
-      <label>Descripción:</label>
-      <textarea name="descripcion" rows="4"></textarea>
+        <form id="historia-form" style="display:none;">
+            <h2>Editar Datos</h2>
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" name="descripcion" placeholder="Descripción"></textarea>
+
+            <label for="medico_responsable">Médico Responsable</label>
+            <input id="medico_responsable" name="medico_responsable" placeholder="Médico Responsable" />
+
+            <label for="updated_by">Actualizado por</label>
+            <input id="updated_by" name="updated_by" placeholder="Tu nombre" />
+
+            <button class="btn" type="submit">Guardar Cambios</button>
+        </form>
+
+        <div class="message" id="historia-message"></div>
     </div>
-    <div>
-      <label>Médico responsable:</label>
-      <input type="text" name="medico_responsable">
-    </div>
-    <div>
-      <label>Actualizado por:</label>
-      <input type="text" name="updated_by">
-    </div>
-    <button type="submit">Guardar cambios</button>
-  </form>
 
-  <div id="msg" style="margin-top:1em;color:green;"></div>
-{% endblock %}
+    <script>
+      const API_BASE = "{{ SERVER2_URL }}";
+      document.addEventListener('DOMContentLoaded', () => {
+        const sel     = document.getElementById('paciente-select');
+        const form    = document.getElementById('historia-form');
+        const msg     = document.getElementById('historia-message');
+        let currentId = null;
 
-{% block scripts %}
-<script>
-const API = "{{ API_BASE }}";
-let currentHistoriaId = null;
+        // 1) Carga pacientes
+        fetch(`${API_BASE}pacientes/`)
+          .then(r => r.json())
+          .then(data => {
+            sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
+            data.results.forEach(p => {
+              sel.innerHTML += `<option value="${p.id}">${p.identificacion} – ${p.nombre} ${p.apellido}</option>`;
+            });
+          });
 
-// 1) Poblar select de pacientes
-fetch(`${API}pacientes/`)
-  .then(r => r.json())
-  .then(js => {
-    js.results.forEach(p => {
-      document.getElementById('paciente')
-        .innerHTML += `<option value="${p.id}">${p.nombre} ${p.apellido}</option>`;
-    });
-  });
+        // 2) Al cambiar, traer historia y mostrar formulario
+        sel.addEventListener('change', () => {
+          const pid = sel.value;
+          msg.textContent = '';
+          if (!pid) {
+            form.style.display = 'none';
+            return;
+          }
+          fetch(`${API_BASE}historias/?paciente=${pid}`)
+            .then(r => r.json())
+            .then(js => {
+              if (!js.results.length) {
+                form.style.display = 'none';
+                msg.textContent = 'No existe historia para este paciente.';
+                msg.className = 'message error';
+                return;
+              }
+              const h = js.results[0];
+              currentId = h.id;
+              document.getElementById('descripcion').value        = h.descripcion || '';
+              document.getElementById('medico_responsable').value = h.medico_responsable || '';
+              document.getElementById('updated_by').value         = '';
+              form.style.display = 'block';
+            });
+        });
 
-// 2) Al cambiar paciente, cargar datos existentes
-document.getElementById('paciente').addEventListener('change', e => {
-  const pid = e.target.value;
-  fetch(`${API}historias/?paciente=${pid}`)
-    .then(r => r.json())
-    .then(js => {
-      const f = document.forms['form-historia'];
-      if (!js.results.length) {
-        currentHistoriaId = null;
-        f.reset();
-        return;
-      }
-      const h = js.results[0];
-      currentHistoriaId = h.id;
-      f.descripcion.value = h.descripcion || '';
-      f.medico_responsable.value = h.medico_responsable || '';
-      f.updated_by.value = '';
-    });
-});
+        // 3) Al enviar, PATCH
+        form.addEventListener('submit', e => {
+          e.preventDefault();
+          if (!currentId) return;
+          const payload = {
+            descripcion:        document.getElementById('descripcion').value,
+            medico_responsable: document.getElementById('medico_responsable').value,
+            updated_by:         document.getElementById('updated_by').value
+          };
+          fetch(`${API_BASE}historias/${currentId}/`, {
+            method:  'PATCH',
+            headers: {'Content-Type':'application/json'},
+            body:    JSON.stringify(payload)
+          })
+          .then(res => {
+            if (res.ok) {
+              msg.textContent = 'Historia actualizada con éxito.';
+              msg.className = 'message success';
+            } else {
+              return res.json().then(err => { throw err; });
+            }
+          })
+          .catch(err => {
+            msg.textContent = 'Error: ' + JSON.stringify(err);
+            msg.className = 'message error';
+          });
+        });
+      });
+    </script>
+</body>
+</html>
 
-// 3) Al enviar, hacer PATCH
-document.getElementById('form-historia')
-  .addEventListener('submit', e => {
-    e.preventDefault();
-    if (!currentHistoriaId) {
-      alert('Primero selecciona un paciente con historia.');
-      return;
-    }
-    const data = {
-      descripcion: e.target.descripcion.value,
-      medico_responsable: e.target.medico_responsable.value,
-      updated_by: e.target.updated_by.value
-    };
-    fetch(`${API}historias/${currentHistoriaId}/`, {
-      method: 'PATCH',
-      headers: { 'Content-Type':'application/json' },
-      body: JSON.stringify(data)
-    })
-    .then(r => {
-      if (r.ok) {
-        document.getElementById('msg').innerText = 'Historia actualizada con éxito';
-      } else {
-        document.getElementById('msg').innerText = 'Error al actualizar';
-      }
-    });
-});
-</script>
-{% endblock %}
