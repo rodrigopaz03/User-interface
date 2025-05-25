@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Servidor Exámenes Médicos - Subir Imagen</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -69,9 +68,12 @@
         <p>Sube las imágenes de exámenes médicos</p>
     </header>
     <div class="content">
-        <div id="message" class="message"></div>
-
-        <form id="uploadForm">
+        {% if message %}
+            <p class="message{% if 'Error' in message or 'Excepción' in message %} error{% endif %}">
+                {{ message }}
+            </p>
+        {% endif %}
+        <form action="" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="paciente">Selecciona un paciente:</label>
             <select name="paciente_id" id="paciente" required>
@@ -83,123 +85,30 @@
 
             <button class="btn" type="submit">Subir Imagen</button>
         </form>
-
         <p><a href="{% url 'index' %}">Volver a la Página Principal</a></p>
     </div>
 
     <script>
-    (function(){
-      const CHUNK_SIZE    = 200_000;  
-      const PATIENTS_API  = "{{ SERVER2_URL }}";  
-      const UPLOAD_API    = "{{ SERVER1_URL }}"; 
-
-      const select       = document.getElementById('paciente');
-      const form         = document.getElementById('uploadForm');
-      const fileInput    = document.getElementById('imagen');
-      const msgDiv       = document.getElementById('message');
-      const csrfToken    = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-      // 1) Carga lista de pacientes
-      fetch(`${PATIENTS_API}pacientes/`)
-        .then(res => res.json())
-        .then(data => {
-          select.innerHTML = '<option value="">Seleccione un paciente…</option>';
-          data.results.forEach(p => {
-            const opt = document.createElement('option');
-            opt.value = p.id;
-            opt.textContent = `${p.identificacion} – ${p.nombre} ${p.apellido}`;
-            select.appendChild(opt);
-          });
-        })
-        .catch(err => {
-          select.innerHTML = '<option value="">Error cargando pacientes</option>';
-          console.error('Error al obtener pacientes:', err);
-        });
-
-      // 2) Envío chunked al servidor de imágenes
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        msgDiv.textContent = '';
-
-        const pacienteId = select.value;
-        const file       = fileInput.files[0];
-        if (!pacienteId) {
-          msgDiv.textContent = 'Debes seleccionar un paciente';
-          msgDiv.classList.add('error');
-          return;
-        }
-        if (!file) {
-          msgDiv.textContent = 'Debes seleccionar una imagen';
-          msgDiv.classList.add('error');
-          return;
-        }
-
-        msgDiv.textContent = 'Preparando imagen…';
-        msgDiv.classList.remove('error');
-
-        // Leer y convertir a Base64
-        const buf    = await file.arrayBuffer();
-        const bytes  = new Uint8Array(buf);
-        let binary   = '';
-        for (let b of bytes) binary += String.fromCharCode(b);
-        const b64    = btoa(binary);
-
-        // Trocear Base64
-        const chunks = [];
-        for (let i = 0; i < b64.length; i += CHUNK_SIZE) {
-          chunks.push(b64.slice(i, i + CHUNK_SIZE));
-        }
-
-        // 2.1) Init upload
-        msgDiv.textContent = `Iniciando upload (${chunks.length} trozos)…`;
-        let res = await fetch(`${UPLOAD_API}init-upload/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-          },
-          body: JSON.stringify({
-            paciente_id:  pacienteId,
-            filename:     file.name,
-            content_type: file.type,
-            chunks_count: chunks.length
+      document.addEventListener('DOMContentLoaded', () => {
+        const select = document.getElementById('paciente');
+        // Cargamos la lista de pacientes desde tu API de registro
+        fetch("{{ API_BASE }}pacientes/")
+          .then(res => res.json())
+          .then(data => {
+            select.innerHTML = '<option value="">Seleccione un paciente…</option>';
+            data.results.forEach(p => {
+              select.innerHTML +=
+                `<option value="${p.id}">` +
+                  `${p.identificacion} – ${p.nombre} ${p.apellido}` +
+                `</option>`;
+            });
           })
-        });
-        if (!res.ok) {
-          msgDiv.textContent = `Error init-upload: ${res.status}`;
-          msgDiv.classList.add('error');
-          return;
-        }
-        const { doc_id } = await res.json();
-
-        // 2.2) Subir todos los chunks en paralelo
-        msgDiv.textContent = 'Subiendo trozos…';
-        try {
-          await Promise.all(chunks.map((data, idx) =>
-            fetch(`${UPLOAD_API}upload-chunk/`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-              },
-              body: JSON.stringify({
-                doc_id:      doc_id,
-                chunk_index: idx,
-                data:        data
-              })
-            }).then(r => {
-              if (!r.ok) throw new Error(`chunk ${idx} → ${r.status}`);
-            })
-          ));
-          msgDiv.textContent = '¡Imagen subida correctamente!';
-        } catch (err) {
-          msgDiv.textContent = 'Error subiendo trozos: ' + err.message;
-          msgDiv.classList.add('error');
-        }
+          .catch(err => {
+            select.innerHTML = '<option value="">Error cargando pacientes</option>';
+            console.error('Error al obtener pacientes:', err);
+          });
       });
-    })();
     </script>
 </body>
 </html>
-
 
