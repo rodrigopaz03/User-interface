@@ -3,64 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <title>Servidor Exámenes Médicos - Subir Imagen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f1f8ff;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #4287db;
-            color: #fff;
-            padding: 20px;
-            text-align: center;
-        }
-        .content {
-            padding: 40px;
-            text-align: center;
-        }
-        form {
-            margin: 20px auto;
-            padding: 20px;
-            max-width: 500px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        label, select, input {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-            font-size: 1em;
-        }
-        select, input[type="file"] {
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        .btn {
-            background-color: #4287db;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-top: 15px;
-        }
-        .btn:hover {
-            background-color: #205aa0;
-        }
-        .message {
-            font-size: 16px;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .error {
-            color: #c82333;
-        }
-    </style>
+        body { font-family: Arial, sans-serif; background-color: #f1f8ff; margin:0; padding:0; }
+        header { background-color: #4287db; color:#fff; padding:20px; text-align:center; }
+        .content { padding:40px; text-align:center; }
+        form { margin:20px auto; padding:20px; max-width:500px; background:#fff; border-radius:5px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+        label, select, input { display:block; width:100%; margin:10px 0; font-size:1em; }
+        select, input[type="file"] { padding:8px; border:1px solid #ccc; border-radius:4px; }
+        .btn { background:#4287db; color:#fff; border:none; padding:10px 20px; font-size:16px; cursor:pointer; border-radius:5px; margin-top:15px; }
+        .btn:hover { background:#205aa0; }
+        .message { font-size:16px; margin-bottom:20px; color:#333; }
+        .error { color:#c82333; }
+    </style>int
 </head>
 <body>
     <header>
@@ -68,12 +23,11 @@
         <p>Sube las imágenes de exámenes médicos</p>
     </header>
     <div class="content">
-        {% if message %}
-            <p class="message{% if 'Error' in message or 'Excepción' in message %} error{% endif %}">
-                {{ message }}
-            </p>
-        {% endif %}
-        <form action="" method="POST" enctype="multipart/form-data">
+        <div id="message" class="message{% if 'Error' in message or 'Excepción' in message %} error{% endif %}">
+            {{ message }}
+        </div>
+
+        <form id="uploadForm">
             {% csrf_token %}
             <label for="paciente">Selecciona un paciente:</label>
             <select name="paciente_id" id="paciente" required>
@@ -85,30 +39,122 @@
 
             <button class="btn" type="submit">Subir Imagen</button>
         </form>
+
         <p><a href="{% url 'index' %}">Volver a la Página Principal</a></p>
     </div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const select = document.getElementById('paciente');
-        // Cargamos la lista de pacientes desde tu API de registro
-        fetch("{{ API_BASE }}pacientes/")
-          .then(res => res.json())
-          .then(data => {
-            select.innerHTML = '<option value="">Seleccione un paciente…</option>';
-            data.results.forEach(p => {
-              select.innerHTML +=
-                `<option value="${p.id}">` +
-                  `${p.identificacion} – ${p.nombre} ${p.apellido}` +
-                `</option>`;
-            });
-          })
-          .catch(err => {
-            select.innerHTML = '<option value="">Error cargando pacientes</option>';
-            console.error('Error al obtener pacientes:', err);
+    (function(){
+      const CHUNK_SIZE = 200_000;               // tamaño de cada chunk (Base64 chars)
+      const PAT_API    = "{{ API_BASE }}";     // para pacientes
+      const IMG_API    = "{{ SERVER1_URL }}";  // para imágenes (debe terminar en '/')
+
+      const select    = document.getElementById('paciente');
+      const form      = document.getElementById('uploadForm');
+      const fileInput = document.getElementById('imagen');
+      const msgDiv    = document.getElementById('message');
+
+      // 1) Carga lista de pacientes
+      fetch(`${PAT_API}pacientes/`)
+        .then(res => res.json())
+        .then(data => {
+          select.innerHTML = '<option value="">Seleccione un paciente…</option>';
+          data.results.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = `${p.identificacion} – ${p.nombre} ${p.apellido}`;
+            select.appendChild(opt);
           });
+        })
+        .catch(err => {
+          select.innerHTML = '<option value="">Error cargando pacientes</option>';
+          console.error('Error al obtener pacientes:', err);
+        });
+
+      // 2) Interceptar submit y enviar por chunks
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msgDiv.textContent = '';
+        msgDiv.classList.remove('error');
+
+        const pacienteId = select.value;
+        const file       = fileInput.files[0];
+        if (!pacienteId) {
+          msgDiv.textContent = 'Debes seleccionar un paciente';
+          msgDiv.classList.add('error');
+          return;
+        }
+        if (!file) {
+          msgDiv.textContent = 'Debes seleccionar una imagen';
+          msgDiv.classList.add('error');
+          return;
+        }
+
+        msgDiv.textContent = 'Preparando imagen…';
+
+        // Leer y Base64
+        const buf    = await file.arrayBuffer();
+        const bytes  = new Uint8Array(buf);
+        let binary   = '';
+        for (let b of bytes) binary += String.fromCharCode(b);
+        const b64    = btoa(binary);
+
+        // Partir en chunks
+        const chunks = [];
+        for (let i = 0; i < b64.length; i += CHUNK_SIZE) {
+          chunks.push(b64.slice(i, i + CHUNK_SIZE));
+        }
+
+        // 2.1) INIT-UPLOAD
+        msgDiv.textContent = `Iniciando upload (${chunks.length} trozos)…`;
+        const initRes = await fetch(`${IMG_API}init-upload/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          },
+          body: JSON.stringify({
+            paciente_id:  pacienteId,
+            filename:     file.name,
+            content_type: file.type,
+            chunks_count: chunks.length
+          })
+        });
+        if (!initRes.ok) {
+          msgDiv.textContent = `Error init-upload: ${initRes.status}`;
+          msgDiv.classList.add('error');
+          return;
+        }
+        const { doc_id } = await initRes.json();
+
+        // 2.2) SUBIDA PARALELA DE CHUNKS
+        msgDiv.textContent = 'Subiendo trozos…';
+        try {
+          await Promise.all(chunks.map((data, idx) =>
+            fetch(`${IMG_API}upload-chunk/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+              },
+              body: JSON.stringify({
+                doc_id:      doc_id,
+                chunk_index: idx,
+                data:        data
+              })
+            }).then(r => {
+              if (!r.ok) throw new Error(`chunk ${idx} -> ${r.status}`);
+            })
+          ));
+          msgDiv.textContent = '¡Imagen subida correctamente!';
+        } catch (err) {
+          msgDiv.textContent = 'Error subiendo trozos: ' + err.message;
+          msgDiv.classList.add('error');
+        }
       });
+    })();
     </script>
 </body>
 </html>
+
 
