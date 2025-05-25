@@ -55,7 +55,7 @@
         let currentId = null;
 
         // 1) Carga pacientes
-        fetch(`${API_BASE}pacientes/`)
+        fetch(`${API_BASE}registro/pacientes/`)
           .then(r => r.json())
           .then(data => {
             sel.innerHTML = '<option value="">Selecciona un paciente…</option>';

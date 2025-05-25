@@ -41,7 +41,7 @@
         const details = document.getElementById('historial-details');
 
         // 1) Cargar lista de pacientes
-        fetch(`${API_BASE}pacientes/`)
+        fetch(`${API_BASE}registro/pacientes/`)
           .then(r => r.json())
           .then(data => {
             sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
