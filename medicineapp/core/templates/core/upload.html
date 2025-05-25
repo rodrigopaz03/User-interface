@@ -47,8 +47,8 @@
     (function(){
       const CHUNK_SIZE = 200_000;               // tamaño de cada chunk (Base64 chars)
       const PAT_API    = "{{ API_BASE }}";     // para pacientes
-      const IMG_API    = "{{ SERVER1_URL }}";  // para imágenes (debe terminar en '/')
-
+      const IMG_API  = "{{ API_UPLOAD }}";
+      
       const select    = document.getElementById('paciente');
       const form      = document.getElementById('uploadForm');
       const fileInput = document.getElementById('imagen');

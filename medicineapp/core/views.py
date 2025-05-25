@@ -37,7 +37,10 @@ def upload_image(request):
         else:
             message = 'No se recibió ningún archivo'
     
-    return render(request, 'core/upload.html', { 'message': message,'API_BASE': settings.SERVER2_URL})
+    return render(request, 'core/upload.html', { 'message': message,
+                                                'API_BASE': settings.SERVER2_URL, 
+                                                'API_UPLOAD': settings.SERVER1_URL.rstrip('/') + '/',
+                                                })
 
 @csrf_exempt  
 def pacientes_menu(request):
