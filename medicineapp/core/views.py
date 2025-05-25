@@ -14,16 +14,20 @@ def index(request):
 def upload_image(request):
     message = ''
     if request.method == 'POST':
-        # Se obtiene el archivo del formulario
         archivo = request.FILES.get('imagen')
-        if archivo:
-            # Preparamos la petición POST para enviar el archivo al microservicio
+        paciente_id = request.POST.get('paciente_id')
+        if not paciente_id:
+            message = 'Debes seleccionar un paciente'
+        elif archivo:
             files = {
                 'imagen': (archivo.name, archivo, archivo.content_type)
             }
-            url = getattr(settings, 'SERVER1_URL')
+            # Añadimos el paciente_id en el form data
+            data = {'paciente_id': paciente_id}
+
+            url = settings.SERVER1_URL  # Asegúrate de que termina con '/'
             try:
-                response = requests.post(url, files=files)
+                response = requests.post(url, files=files, data=data)
                 if response.status_code == 201:
                     message = 'Imagen subida con éxito al servidor'
                 else:

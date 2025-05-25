@@ -28,9 +28,16 @@
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
-        input[type="file"] {
+        label, select, input {
             display: block;
-            margin: 15px auto;
+            width: 100%;
+            margin: 10px 0;
+            font-size: 1em;
+        }
+        select, input[type="file"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
         }
         .btn {
             background-color: #4287db;
@@ -40,6 +47,7 @@
             font-size: 16px;
             cursor: pointer;
             border-radius: 5px;
+            margin-top: 15px;
         }
         .btn:hover {
             background-color: #205aa0;
@@ -47,6 +55,10 @@
         .message {
             font-size: 16px;
             margin-bottom: 20px;
+            color: #333;
+        }
+        .error {
+            color: #c82333;
         }
     </style>
 </head>
@@ -57,18 +69,46 @@
     </header>
     <div class="content">
         {% if message %}
-            <p class="message">{{ message }}</p>
+            <p class="message{% if 'Error' in message or 'Excepción' in message %} error{% endif %}">
+                {{ message }}
+            </p>
         {% endif %}
         <form action="" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <p>
-                <label for="imagen">Selecciona una imagen:</label>
-                <!-- Con accept="image/*" se filtran los tipos de archivo en el navegador -->
-                <input type="file" name="imagen" id="imagen" accept="image/*" required>
-            </p>
+            <label for="paciente">Selecciona un paciente:</label>
+            <select name="paciente_id" id="paciente" required>
+                <option value="">Cargando pacientes…</option>
+            </select>
+
+            <label for="imagen">Selecciona una imagen:</label>
+            <input type="file" name="imagen" id="imagen" accept="image/*" required>
+
             <button class="btn" type="submit">Subir Imagen</button>
         </form>
         <p><a href="{% url 'index' %}">Volver a la Página Principal</a></p>
     </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const select = document.getElementById('paciente');
+        // Cargamos la lista de pacientes desde tu API de registro
+        fetch("{{ API_BASE }}pacientes/")
+          .then(res => res.json())
+          .then(data => {
+            select.innerHTML = '<option value="">Seleccione un paciente…</option>';
+            data.results.forEach(p => {
+              select.innerHTML +=
+                `<option value="${p.id}">` +
+                  `${p.identificacion} – ${p.nombre} ${p.apellido}` +
+                `</option>`;
+            });
+          })
+          .catch(err => {
+            select.innerHTML = '<option value="">Error cargando pacientes</option>';
+            console.error('Error al obtener pacientes:', err);
+          });
+      });
+    </script>
 </body>
 </html>
+
