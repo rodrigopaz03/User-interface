@@ -35,13 +35,13 @@
 
     <script>
       // Base de la API inyectada desde la vista
-      const API_BASE = "{{ SERVER2_URL }}";
+      const API_BASE = "{{ API_BASE }}";
       document.addEventListener('DOMContentLoaded', () => {
         const sel     = document.getElementById('paciente-select');
         const details = document.getElementById('historial-details');
 
         // 1) Cargar lista de pacientes
-        fetch(`${API_BASE}registro/pacientes/`)
+        fetch(`${API_BASE}pacientes/`)
           .then(r => r.json())
           .then(data => {
             sel.innerHTML = '<option value="">Selecciona un paciente…</option>';
