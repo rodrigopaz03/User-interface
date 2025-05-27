@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 SERVER1_URL = 'http://34.58.206.205:8000'
-SERVER2_URL = 'http://34.69.130.44:8080/registro/'
+SERVER2_URL = 'http://35.222.140.135:8080/registro/'
 
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
