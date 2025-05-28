@@ -72,7 +72,8 @@
     <script>
       const SERVER1_URL = "{{ SERVER1_URL }}";  // Servicio de Exámenes Médicos
       const SERVER2_URL = "{{ SERVER2_URL }}";  // Servicio de Historias Clínicas
-      console.log('Microservicios:', SERVER1_URL, SERVER2_URL);
+      const SERVER3_URL = "{{ SERVER3_URL }}";  // Servicio de Gestión de Pacientes
+      console.log('Microservicios:', SERVER1_URL, SERVER2_URL, SERVER3_URL);
     </script>
 
     <div class="home-content">
@@ -88,6 +89,12 @@
                 <p>Administra pacientes e historias clínicas.</p>
                 <!-- UI interna que usa SERVER2_URL para proxy -->
                 <a href="{% url 'pacientes_menu' %}" class="btn">Ir al servidor</a>
+            </div>
+            <div class="server-card">
+                <h2>Diagnósticos</h2>
+                <p>Administra diagnósticos médicos.</p>
+                <!-- UI interna que usa SERVER3_URL para proxy -->
+                <a href="{% url 'combined' %}" class="btn" target="_blank">Ir a Diagnóstico</a>
             </div>
         </div>
     </div>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Diagnósticos Médicos</title>
+    <style>
+        body { margin: 0; font-family: Arial, sans-serif; background-color: #eef6fb; color: #333; }
+        header { background-color: #0056b3; color: #fff; padding: 30px 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .content { padding: 40px; max-width: 800px; margin: auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border: 1px solid #bbb; text-align: left; }
+        th { background-color: #007bff; color: #fff; }
+        .message { margin-top: 20px; font-style: italic; font-size: 1.2em; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+    <script>
+      const API_BASE = "{{ SERVER3_URL }}";
+      console.log("API Diagnóstico:", API_BASE);
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Diagnósticos Médicos</h1>
+    </header>
+    <div class="content">
+        <h2>Lista de Diagnósticos Integrados</h2>
+        <div id="diagnosticos-message" class="message"></div>
+        <table id="diagnosticos-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Paciente</th>
+                    <th>Diagnóstico</th>
+                    <th>Fecha</th>
+                    <th>Resultado</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <script>
+    // Aquí defines el endpoint exacto de tu microservicio, por ejemplo /diagnosticos/
+    fetch(`${API_BASE}diagnosticos/`)
+      .then(res => {
+        if (!res.ok) throw new Error("No se pudo consultar el microservicio");
+        return res.json();
+      })
+      .then(data => {
+        const msg = document.getElementById('diagnosticos-message');
+        const table = document.getElementById('diagnosticos-table');
+        const tbody = table.querySelector('tbody');
+        if (data.length === 0) {
+            msg.textContent = 'No hay diagnósticos registrados.';
+            table.style.display = 'none';
+        } else {
+            msg.textContent = '';
+            table.style.display = '';
+            tbody.innerHTML = '';
+            data.forEach(diag => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${diag.id ?? ''}</td>
+                    <td>${diag.paciente ?? ''}</td>
+                    <td>${diag.nombre ?? diag.diagnostico ?? ''}</td>
+                    <td>${diag.fecha ?? ''}</td>
+                    <td>${diag.resultado ?? ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+      })
+      .catch(err => {
+        document.getElementById('diagnosticos-message').textContent = 'Error cargando diagnósticos: ' + err;
+        document.getElementById('diagnosticos-table').style.display = 'none';
+      });
+    </script>
+</body>
+</html>
