@@ -2,6 +2,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.conf import settings
 import requests
+import base64
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 @csrf_exempt  
 def index(request):
@@ -10,37 +12,87 @@ def index(request):
     """
     return render(request, 'core/index.html')
 
-@csrf_exempt  
+import base64
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import requests
+
+from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import render
+from django.conf import settings
+
+@csrf_exempt
 def upload_image(request):
     message = ''
     if request.method == 'POST':
-        archivo = request.FILES.get('imagen')
+        archivo     = request.FILES.get('imagen')
         paciente_id = request.POST.get('paciente_id')
+
         if not paciente_id:
             message = 'Debes seleccionar un paciente'
-        elif archivo:
-            files = {
-                'imagen': (archivo.name, archivo, archivo.content_type)
-            }
-            # Añadimos el paciente_id en el form data
-            data = {'paciente_id': paciente_id}
 
-            url = settings.SERVER1_URL  # Asegúrate de que termina con '/'
+        elif archivo:
+            
+            contenido = archivo.read()
+            b64       = base64.b64encode(contenido).decode('ascii')
+
+            CHUNK_SIZE = 200_000
+            chunks     = [b64[i:i+CHUNK_SIZE] for i in range(0, len(b64), CHUNK_SIZE)]
+
+            init_payload = {
+                "paciente_id":  paciente_id,
+                "filename":     archivo.name,
+                "content_type": archivo.content_type,
+                "chunks_count": len(chunks)
+            }
             try:
-                response = requests.post(url, files=files, data=data)
-                if response.status_code == 201:
-                    message = 'Imagen subida con éxito al servidor'
-                else:
-                    message = f'Error: {response.status_code} - {response.text}'
+                init_res = requests.post(
+                    f"{settings.SERVER1_URL.rstrip('/')}/init-upload/",
+                    json=init_payload
+                )
+                init_res.raise_for_status()
             except Exception as e:
-                message = f'Excepción al enviar: {e}'
+                message = f'Error en init-upload: {e}'
+                return render(request, 'core/upload.html', {
+                    'message':    message,
+                    'API_BASE':   settings.SERVER2_URL,
+                    'API_UPLOAD': settings.SERVER1_URL.rstrip('/') + '/',
+                })
+
+            doc_id = init_res.json().get("doc_id")
+            
+            upload_url = f"{settings.SERVER1_URL.rstrip('/')}/upload-chunk/"
+            tasks      = [
+                {"doc_id": doc_id, "chunk_index": idx, "data": data}
+                for idx, data in enumerate(chunks)
+            ]
+            errors = []
+            with ThreadPoolExecutor(max_workers=min(8, len(tasks))) as executor:
+                futures = {
+                    executor.submit(requests.post, upload_url, json=payload): payload["chunk_index"]
+                    for payload in tasks
+                }
+                for future in as_completed(futures):
+                    idx = futures[future]
+                    try:
+                        resp = future.result()
+                        resp.raise_for_status()
+                    except Exception as e:
+                        errors.append(f"chunk {idx}: {e}")
+
+            if errors:
+                message = "Errores enviando chunks: " + "; ".join(errors)
+            else:
+                message = "Imagen subida correctamente"
+
         else:
             message = 'No se recibió ningún archivo'
-    
-    return render(request, 'core/upload.html', { 'message': message,
-                                                'API_BASE': settings.SERVER2_URL, 
-                                                'API_UPLOAD': settings.SERVER1_URL.rstrip('/') + '/',
-                                                })
+
+    return render(request, 'core/upload.html', {
+        'message':    message,
+        'API_BASE':   settings.SERVER2_URL,
+        'API_UPLOAD': settings.SERVER1_URL.rstrip('/') + '/',
+    })
+
 
 @csrf_exempt  
 def pacientes_menu(request):

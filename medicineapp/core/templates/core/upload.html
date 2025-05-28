@@ -15,7 +15,7 @@
         .btn:hover { background:#205aa0; }
         .message { font-size:16px; margin-bottom:20px; color:#333; }
         .error { color:#c82333; }
-    </style>int
+    </style>
 </head>
 <body>
     <header>
@@ -27,7 +27,7 @@
             {{ message }}
         </div>
 
-        <form id="uploadForm">
+        <form id="uploadForm" method="post" action="" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="paciente">Selecciona un paciente:</label>
             <select name="paciente_id" id="paciente" required>
@@ -44,17 +44,11 @@
     </div>
 
     <script>
+    
     (function(){
-      const CHUNK_SIZE = 200_000;               // tamaño de cada chunk (Base64 chars)
-      const PAT_API    = "{{ API_BASE }}";     // para pacientes
-      const IMG_API  = "{{ API_UPLOAD }}";
-      
-      const select    = document.getElementById('paciente');
-      const form      = document.getElementById('uploadForm');
-      const fileInput = document.getElementById('imagen');
-      const msgDiv    = document.getElementById('message');
+      const PAT_API = "{{ API_BASE }}";
+      const select  = document.getElementById('paciente');
 
-      // 1) Carga lista de pacientes
       fetch(`${PAT_API}pacientes/`)
         .then(res => res.json())
         .then(data => {
@@ -70,91 +64,7 @@
           select.innerHTML = '<option value="">Error cargando pacientes</option>';
           console.error('Error al obtener pacientes:', err);
         });
-
-      // 2) Interceptar submit y enviar por chunks
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        msgDiv.textContent = '';
-        msgDiv.classList.remove('error');
-
-        const pacienteId = select.value;
-        const file       = fileInput.files[0];
-        if (!pacienteId) {
-          msgDiv.textContent = 'Debes seleccionar un paciente';
-          msgDiv.classList.add('error');
-          return;
-        }
-        if (!file) {
-          msgDiv.textContent = 'Debes seleccionar una imagen';
-          msgDiv.classList.add('error');
-          return;
-        }
-
-        msgDiv.textContent = 'Preparando imagen…';
-
-        // Leer y Base64
-        const buf    = await file.arrayBuffer();
-        const bytes  = new Uint8Array(buf);
-        let binary   = '';
-        for (let b of bytes) binary += String.fromCharCode(b);
-        const b64    = btoa(binary);
-
-        // Partir en chunks
-        const chunks = [];
-        for (let i = 0; i < b64.length; i += CHUNK_SIZE) {
-          chunks.push(b64.slice(i, i + CHUNK_SIZE));
-        }
-
-        // 2.1) INIT-UPLOAD
-        msgDiv.textContent = `Iniciando upload (${chunks.length} trozos)…`;
-        const initRes = await fetch(`${IMG_API}init-upload/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          },
-          body: JSON.stringify({
-            paciente_id:  pacienteId,
-            filename:     file.name,
-            content_type: file.type,
-            chunks_count: chunks.length
-          })
-        });
-        if (!initRes.ok) {
-          msgDiv.textContent = `Error init-upload: ${initRes.status}`;
-          msgDiv.classList.add('error');
-          return;
-        }
-        const { doc_id } = await initRes.json();
-
-        // 2.2) SUBIDA PARALELA DE CHUNKS
-        msgDiv.textContent = 'Subiendo trozos…';
-        try {
-          await Promise.all(chunks.map((data, idx) =>
-            fetch(`${IMG_API}upload-chunk/`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-              },
-              body: JSON.stringify({
-                doc_id:      doc_id,
-                chunk_index: idx,
-                data:        data
-              })
-            }).then(r => {
-              if (!r.ok) throw new Error(`chunk ${idx} -> ${r.status}`);
-            })
-          ));
-          msgDiv.textContent = '¡Imagen subida correctamente!';
-        } catch (err) {
-          msgDiv.textContent = 'Error subiendo trozos: ' + err.message;
-          msgDiv.classList.add('error');
-        }
-      });
     })();
     </script>
 </body>
 </html>
-
-
