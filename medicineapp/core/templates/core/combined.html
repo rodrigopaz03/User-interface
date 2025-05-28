@@ -41,7 +41,7 @@
     </div>
     <script>
     // Aquí defines el endpoint exacto de tu microservicio, por ejemplo /diagnosticos/
-    fetch(`${API_BASE}diagnosticos/`)
+    fetch(`${API_BASE}/diagnosticos/`)
       .then(res => {
         if (!res.ok) throw new Error("No se pudo consultar el microservicio");
         return res.json();
