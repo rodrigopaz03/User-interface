@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-SERVER1_URL = 'http://23.236.52.182:8080'
+SERVER1_URL = 'http://23.236.52.182:8000'
 SERVER2_URL = 'http://130.211.118.196:8000/registro/'
 SERVER3_URL = 'http://34.30.40.219:8000'
 
