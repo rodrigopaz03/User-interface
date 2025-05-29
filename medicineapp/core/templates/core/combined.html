@@ -37,10 +37,11 @@
   </div>
 
   <script>
-    const PAT_API = "{{ API_BASE }}".replace(/\/+$/, "") + "/";     // microservicio de pacientes
-    const IMG_API = "{{ API_UPLOAD }}".replace(/\/+$/, "") + "/";   // microservicio de imágenes
+    // Ajusta bien estas URLs en tu view al renderizar
+    const PAT_API = "{{ API_BASE }}".replace(/\/+$/, "") + "/";
+    const IMG_API = "{{ API_UPLOAD }}".replace(/\/+$/, "") + "/";
 
-    // 1) Cargo pacientes
+    // 1) Cargo la lista de pacientes
     const select = document.getElementById('paciente');
     fetch(`${PAT_API}pacientes/`)
       .then(r => r.ok ? r.json() : Promise.reject(`Status ${r.status}`))
@@ -58,7 +59,7 @@
         console.error(e);
       });
 
-    // 2) Al cambiar, cargo imágenes y por cada una pido su URL
+    // 2) Al cambiar selección, pido la lista de imágenes y las muestro
     select.addEventListener('change', () => {
       const pid = select.value;
       const gallery = document.getElementById('gallery');
@@ -81,25 +82,18 @@
           }
           msg.textContent = '';
           imags.forEach(img => {
-            // Para cada imagen: primero obtengo su URL pública
-            fetch(`${IMG_API}imagenes/${img.id}/`)
-              .then(r => r.ok ? r.json() : Promise.reject(`Status ${r.status}`))
-              .then(j => {
-                const url = j.url;
-                const card = document.createElement('div');
-                card.className = 'image-card';
-                card.innerHTML = `
-                  <a href="${url}" target="_blank">
-                    <img src="${url}" alt="Examen ${img.filename || img.id}">
-                  </a>
-                  <div class="meta">${img.filename || 'Sin nombre'}</div>
-                  <div class="meta">${img.uploaded_at.split('T')[0]}</div>
-                `;
-                gallery.appendChild(card);
-              })
-              .catch(err => {
-                console.error('No pude obtener URL de imagen:', err);
-              });
+            // Aquí insertamos directamente el <img> que apunta al endpoint /download/
+            const url = `${IMG_API}imagenes/${img.id}/download/`;
+            const card = document.createElement('div');
+            card.className = 'image-card';
+            card.innerHTML = `
+              <a href="${url}" target="_blank">
+                <img src="${url}" alt="Examen ${img.filename || img.id}">
+              </a>
+              <div class="meta">${img.filename || 'Sin nombre'}</div>
+              <div class="meta">${img.uploaded_at.split('T')[0]}</div>
+            `;
+            gallery.appendChild(card);
           });
         })
         .catch(err => {
