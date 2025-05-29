@@ -190,10 +190,12 @@
       if (!pid) return;
 
       const payload = {
-        paciente_id: pid,
-        comentarios: document.getElementById('comentarios').value,
-        requiere_cirugia: document.getElementById('cirugia').checked
-      };
+  // ojo: aquí debe ir “paciente”, no paciente_id
+  paciente:    pid,
+  comentarios: diagForm.comentarios.value,
+  cirugia:     diagForm.cirugia.checked
+};
+
 
       try {
         const res = await fetch(`${DIAG_API}diagnosticos/`, {
