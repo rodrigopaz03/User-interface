@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Consultar Exámenes e Historia Clínica</title>
+  <title>Diagnósticos Médicos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     body { margin:0; font-family:Arial,sans-serif; background:#eef6fb; color:#333; }
@@ -120,12 +120,12 @@
     select.addEventListener('change', () => {
       const pid = select.value;
       // reset UI
-      histDiv.style.display = 'none';
-      gallery.innerHTML     = '';
-      msgImg.textContent     = '';
-      viewer.style.display   = 'none';
+      histDiv.style.display     = 'none';
+      gallery.innerHTML         = '';
+      msgImg.textContent        = '';
+      viewer.style.display      = 'none';
       diagFormDiv.style.display = 'none';
-      diagMsg.textContent = '';
+      diagMsg.textContent       = '';
 
       if (!pid) return;
 
@@ -135,10 +135,10 @@
         .then(js => {
           if (js.results && js.results.length) {
             const h = js.results[0];
-            document.getElementById('hist-id').textContent    = h.id;
-            document.getElementById('hist-fecha').textContent = new Date(h.fecha_apertura).toLocaleDateString();
-            document.getElementById('hist-medico').textContent= h.medico_responsable;
-            document.getElementById('hist-desc').textContent  = h.descripcion || '—';
+            document.getElementById('hist-id').textContent     = h.id;
+            document.getElementById('hist-fecha').textContent  = new Date(h.fecha_apertura).toLocaleDateString();
+            document.getElementById('hist-medico').textContent = h.medico_responsable;
+            document.getElementById('hist-desc').textContent   = h.descripcion || '—';
             histDiv.style.display = 'block';
           }
         })
@@ -159,9 +159,9 @@
             const card = document.createElement('div');
             card.className = 'image-card';
             card.innerHTML = `
-              <img src="${url}"
-                   data-filename="${img.filename}"
-                   data-date="${img.uploaded_at.split('T')[0]}"
+              <img src="${url}" 
+                   data-filename="${img.filename}" 
+                   data-date="${img.uploaded_at.split('T')[0]}" 
                    alt="Miniatura examen">
               <div class="meta">${img.filename || 'Sin nombre'}</div>
             `;
@@ -191,8 +191,8 @@
 
       const payload = {
         paciente_id: pid,
-        comentarios: diagForm.comentarios.value,
-        cirugia:     diagForm.cirugia.checked
+        comentarios: document.getElementById('comentarios').value,
+        requiere_cirugia: document.getElementById('cirugia').checked
       };
 
       try {
@@ -202,10 +202,12 @@
           body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error(`Status ${res.status}`);
+        diagMsg.style.color = 'green';
         diagMsg.textContent = 'Diagnóstico guardado ✅';
         diagForm.reset();
       } catch(err) {
-        diagMsg.textContent = 'Error guardando diagnóstico: ' + err;
+        diagMsg.style.color = 'red';
+        diagMsg.textContent = 'Error guardando diagnóstico: ' + err.message;
       }
     });
   </script>
