@@ -9,7 +9,8 @@ from .views import (
     paciente_nuevo,
     historia_actualizar,
     historia_consulta,
-    combined_view
+    combined_view,
+
 )
 
 urlpatterns = [
@@ -20,7 +21,6 @@ urlpatterns = [
     path('pacientes/consultar/', historia_consulta,   name='pacientes_consultar'),
     path('pacientes/actualizar/',  historia_actualizar,  name='pacientes_actualizar'),
     path('combined/',           combined_view,    name='combined'),
-
 ]
 
 

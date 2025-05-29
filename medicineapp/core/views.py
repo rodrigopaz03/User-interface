@@ -138,3 +138,4 @@ def combined_view(request):
     return render(request, 'core/combined.html', {
         'SERVER3_URL': settings.SERVER3_URL
     })
+
