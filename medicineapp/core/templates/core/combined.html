@@ -8,18 +8,21 @@
     body { margin:0; font-family:Arial,sans-serif; background:#eef6fb; color:#333; }
     header { background:#0056b3; color:#fff; padding:30px 20px; text-align:center;
              box-shadow:0 2px 5px rgba(0,0,0,0.2); }
-    .content { padding:40px; max-width:800px; margin:auto; }
+    .content { padding:40px; max-width:900px; margin:auto; }
     label, select { display:block; width:100%; padding:10px; margin:8px 0;
                     border:1px solid #ccc; border-radius:4px; font-size:1em; }
     .details { background:#fff; padding:20px; border-radius:5px;
                box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-top:20px; text-align:left; }
+    #image-viewer { margin-top:30px; text-align:center; display:none; }
+    #image-viewer img { max-width:100%; height:auto; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
     .gallery { display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-top:40px; }
     .image-card { background:#fff; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,.1);
-                  padding:10px; width:150px; text-align:center; }
-    .image-card img { width:100%; height:100px; object-fit:cover; border-radius:4px; }
-    .image-card .meta { font-size:.85em; margin-top:6px; word-break:break-word; }
+                  padding:10px; width:200px; text-align:center; cursor:pointer; }
+    .image-card img { width:100%; height:150px; object-fit:cover; border-radius:4px; }
+    .image-card .meta { font-size:.85em; margin-top:6px; }
     .message { font-size:16px; margin-top:20px; color:#555; }
     .error { color:#c82333; }
+    .caption { margin-top:10px; font-size:.9em; color:#666; }
   </style>
 </head>
 <body>
@@ -44,7 +47,13 @@
       <p><strong>Descripción:</strong> <span id="hist-desc"></span></p>
     </div>
 
-    <!-- Galería de Imágenes -->
+    <!-- Visor grande de la imagen seleccionada -->
+    <div id="image-viewer">
+      <img id="viewer-img" src="" alt="Vista previa examen">
+      <div class="caption" id="viewer-caption"></div>
+    </div>
+
+    <!-- Mensaje y galería de miniaturas -->
     <div id="gallery-message" class="message"></div>
     <div class="gallery" id="gallery"></div>
 
@@ -57,10 +66,13 @@
     const PAT_API = "{{ API_BASE }}".replace(/\/+$/, "") + "/";
     const IMG_API = "{{ API_UPLOAD }}".replace(/\/+$/, "") + "/";
 
-    const select = document.getElementById('paciente'),
-          histDiv = document.getElementById('historial-details'),
-          gallery = document.getElementById('gallery'),
-          msgImg  = document.getElementById('gallery-message');
+    const select     = document.getElementById('paciente');
+    const histDiv    = document.getElementById('historial-details');
+    const gallery    = document.getElementById('gallery');
+    const msgImg     = document.getElementById('gallery-message');
+    const viewer     = document.getElementById('image-viewer');
+    const viewerImg  = document.getElementById('viewer-img');
+    const viewerCap  = document.getElementById('viewer-caption');
 
     // 1) Cargo pacientes
     fetch(`${PAT_API}pacientes/`)
@@ -82,10 +94,11 @@
     // 2) Al cambiar paciente, cargo historia e imágenes
     select.addEventListener('change', () => {
       const pid = select.value;
-      // Reseteo
+      // Reset
       histDiv.style.display = 'none';
       gallery.innerHTML = '';
       msgImg.textContent = '';
+      viewer.style.display = 'none';
 
       if (!pid) return;
 
@@ -102,31 +115,35 @@
             histDiv.style.display = 'block';
           }
         })
-        .catch(err => {
-          console.error('Error cargando historia:', err);
-        });
+        .catch(err => console.error('Error historia:', err));
 
       // 2b) Imágenes
       msgImg.textContent = 'Cargando imágenes…';
       fetch(`${IMG_API}pacientes/${pid}/imagenes/`)
         .then(r => r.ok ? r.json() : Promise.reject(r.status))
         .then(imags => {
+          msgImg.textContent = '';
           if (!imags.length) {
             msgImg.textContent = 'No hay imágenes para este paciente.';
             return;
           }
-          msgImg.textContent = '';
+          // Mostrar miniaturas
           imags.forEach(img => {
             const url = `${IMG_API}imagenes/${img.id}/download/`;
             const card = document.createElement('div');
             card.className = 'image-card';
             card.innerHTML = `
-              <a href="${url}" target="_blank">
-                <img src="${url}" alt="Examen ${img.filename || img.id}">
-              </a>
+              <img src="${url}" data-filename="${img.filename}" data-date="${img.uploaded_at.split('T')[0]}" alt="Examen miniatura">
               <div class="meta">${img.filename || 'Sin nombre'}</div>
-              <div class="meta">${img.uploaded_at.split('T')[0]}</div>
             `;
+            // Al hacer click en la miniatura, la mostramos grande
+            card.addEventListener('click', () => {
+              viewerImg.src = url;
+              viewerCap.textContent = `${img.filename || img.id} — ${img.uploaded_at.split('T')[0]}`;
+              viewer.style.display = 'block';
+              // Scroll suavemente al visor
+              viewer.scrollIntoView({ behavior: 'smooth' });
+            });
             gallery.appendChild(card);
           });
         })
