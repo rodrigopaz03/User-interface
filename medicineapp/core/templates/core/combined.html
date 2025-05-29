@@ -9,8 +9,9 @@
     header { background:#0056b3; color:#fff; padding:30px 20px; text-align:center;
              box-shadow:0 2px 5px rgba(0,0,0,0.2); }
     .content { padding:40px; max-width:900px; margin:auto; }
-    label, select { display:block; width:100%; padding:10px; margin:8px 0;
-                    border:1px solid #ccc; border-radius:4px; font-size:1em; }
+    label, select, textarea { display:block; width:100%; padding:10px; margin:8px 0;
+                              border:1px solid #ccc; border-radius:4px; font-size:1em; }
+    textarea { resize:vertical; height:100px; }
     .details { background:#fff; padding:20px; border-radius:5px;
                box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-top:20px; text-align:left; }
     #image-viewer { margin-top:30px; text-align:center; display:none; }
@@ -23,12 +24,17 @@
     .message { font-size:16px; margin-top:20px; color:#555; }
     .error { color:#c82333; }
     .caption { margin-top:10px; font-size:.9em; color:#666; }
+    .btn { margin-top:10px; padding:10px 20px; background:#0056b3; color:#fff;
+           border:none; border-radius:4px; cursor:pointer; }
+    .btn:hover { background:#003f7f; }
+    #diag-form { background:#fff; padding:20px; border-radius:5px; box-shadow:0 1px 3px rgba(0,0,0,0.1);
+                 margin-top:30px; text-align:left; display:none; }
   </style>
 </head>
 <body>
   <header>
-    <h1>Consultar Exámenes Médicos</h1>
-    <p>Selecciona un paciente para ver su Historia Clínica e Imágenes</p>
+    <h1>Diagnósticos Médicos</h1>
+    <p>Selecciona un paciente para ver su Historia Clínica, Imágenes y agregar Diagnóstico</p>
   </header>
 
   <div class="content">
@@ -57,26 +63,45 @@
     <div id="gallery-message" class="message"></div>
     <div class="gallery" id="gallery"></div>
 
+    <!-- Formulario para registrar Diagnóstico -->
+    <div id="diag-form">
+      <h2>Registrar Diagnóstico</h2>
+      <form id="form-diagnostico">
+        <label for="comentarios">Comentarios:</label>
+        <textarea id="comentarios" name="comentarios" required></textarea>
+        <label>
+          <input type="checkbox" id="cirugia" name="cirugia" />
+          Requiere cirugía
+        </label>
+        <button type="submit" class="btn">Guardar Diagnóstico</button>
+      </form>
+      <div id="diag-message" class="message"></div>
+    </div>
+
     <p style="margin-top:40px;">
       <a href="{% url 'index' %}">Volver a la Página Principal</a>
     </p>
   </div>
 
   <script>
-    const PAT_API = "{{ API_BASE }}".replace(/\/+$/, "") + "/";
-    const IMG_API = "{{ API_UPLOAD }}".replace(/\/+$/, "") + "/";
+    const PAT_API  = "{{ API_BASE }}".replace(/\/+$/, "") + "/";
+    const IMG_API  = "{{ API_UPLOAD }}".replace(/\/+$/, "") + "/";
+    const DIAG_API = "{{ API_DIAG }}".replace(/\/+$/, "") + "/";
 
-    const select     = document.getElementById('paciente');
-    const histDiv    = document.getElementById('historial-details');
-    const gallery    = document.getElementById('gallery');
-    const msgImg     = document.getElementById('gallery-message');
-    const viewer     = document.getElementById('image-viewer');
-    const viewerImg  = document.getElementById('viewer-img');
-    const viewerCap  = document.getElementById('viewer-caption');
+    const select      = document.getElementById('paciente'),
+          histDiv     = document.getElementById('historial-details'),
+          gallery     = document.getElementById('gallery'),
+          msgImg      = document.getElementById('gallery-message'),
+          viewer      = document.getElementById('image-viewer'),
+          viewerImg   = document.getElementById('viewer-img'),
+          viewerCap   = document.getElementById('viewer-caption'),
+          diagFormDiv = document.getElementById('diag-form'),
+          diagForm    = document.getElementById('form-diagnostico'),
+          diagMsg     = document.getElementById('diag-message');
 
     // 1) Cargo pacientes
     fetch(`${PAT_API}pacientes/`)
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(r => r.ok ? r.json() : Promise.reject(`Status ${r.status}`))
       .then(data => {
         select.innerHTML = '<option value="">Seleccione un paciente…</option>';
         data.results.forEach(p => {
@@ -91,20 +116,22 @@
         console.error(e);
       });
 
-    // 2) Al cambiar paciente, cargo historia e imágenes
+    // 2) Al cambiar paciente, cargo historia, imágenes y muestro el formulario
     select.addEventListener('change', () => {
       const pid = select.value;
-      // Reset
+      // reset UI
       histDiv.style.display = 'none';
-      gallery.innerHTML = '';
-      msgImg.textContent = '';
-      viewer.style.display = 'none';
+      gallery.innerHTML     = '';
+      msgImg.textContent     = '';
+      viewer.style.display   = 'none';
+      diagFormDiv.style.display = 'none';
+      diagMsg.textContent = '';
 
       if (!pid) return;
 
       // 2a) Historia Clínica
       fetch(`${PAT_API}historias/?paciente=${pid}`)
-        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(r => r.ok ? r.json() : Promise.reject(`Status ${r.status}`))
         .then(js => {
           if (js.results && js.results.length) {
             const h = js.results[0];
@@ -120,28 +147,28 @@
       // 2b) Imágenes
       msgImg.textContent = 'Cargando imágenes…';
       fetch(`${IMG_API}pacientes/${pid}/imagenes/`)
-        .then(r => r.ok ? r.json() : Promise.reject(r.status))
+        .then(r => r.ok ? r.json() : Promise.reject(`Status ${r.status}`))
         .then(imags => {
           msgImg.textContent = '';
           if (!imags.length) {
             msgImg.textContent = 'No hay imágenes para este paciente.';
             return;
           }
-          // Mostrar miniaturas
           imags.forEach(img => {
             const url = `${IMG_API}imagenes/${img.id}/download/`;
             const card = document.createElement('div');
             card.className = 'image-card';
             card.innerHTML = `
-              <img src="${url}" data-filename="${img.filename}" data-date="${img.uploaded_at.split('T')[0]}" alt="Examen miniatura">
+              <img src="${url}"
+                   data-filename="${img.filename}"
+                   data-date="${img.uploaded_at.split('T')[0]}"
+                   alt="Miniatura examen">
               <div class="meta">${img.filename || 'Sin nombre'}</div>
             `;
-            // Al hacer click en la miniatura, la mostramos grande
             card.addEventListener('click', () => {
               viewerImg.src = url;
               viewerCap.textContent = `${img.filename || img.id} — ${img.uploaded_at.split('T')[0]}`;
               viewer.style.display = 'block';
-              // Scroll suavemente al visor
               viewer.scrollIntoView({ behavior: 'smooth' });
             });
             gallery.appendChild(card);
@@ -151,6 +178,35 @@
           msgImg.textContent = 'Error cargando imágenes: ' + err;
           console.error(err);
         });
+
+      // 2c) Muestro formulario de diagnóstico
+      diagFormDiv.style.display = 'block';
+    });
+
+    // 3) Envío de diagnóstico
+    diagForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      const pid = select.value;
+      if (!pid) return;
+
+      const payload = {
+        paciente_id: pid,
+        comentarios: diagForm.comentarios.value,
+        cirugia:     diagForm.cirugia.checked
+      };
+
+      try {
+        const res = await fetch(`${DIAG_API}diagnosticos/`, {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        diagMsg.textContent = 'Diagnóstico guardado ✅';
+        diagForm.reset();
+      } catch(err) {
+        diagMsg.textContent = 'Error guardando diagnóstico: ' + err;
+      }
     });
   </script>
 </body>

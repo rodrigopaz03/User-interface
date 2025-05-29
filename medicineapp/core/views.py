@@ -132,9 +132,13 @@ def historia_actualizar(request):
 
 @csrf_exempt
 def combined_view(request):
+    """
+    Página combinada con Historia Clínica, Imágenes y Diagnóstico.
+    """
     return render(request, 'core/combined.html', {
-        'API_BASE': settings.SERVER2_URL,
-        'API_UPLOAD': settings.SERVER1_URL.rstrip('/') + '/',
+        'API_BASE':   settings.SERVER2_URL,                                  # microservicio de historias
+        'API_UPLOAD': settings.SERVER1_URL.rstrip('/') + '/',                # microservicio de imágenes
+        'API_DIAG':   settings.SERVER3_URL.rstrip('/') + '/'                 # microservicio de diagnósticos
     })
 
 
