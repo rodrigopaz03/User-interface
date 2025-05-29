@@ -185,33 +185,37 @@
 
     // 3) Envío de diagnóstico
     diagForm.addEventListener('submit', async e => {
-      e.preventDefault();
-      const pid = select.value;
-      if (!pid) return;
+  e.preventDefault();
+  const pid = select.value;
+  if (!pid) return;
 
-      const payload = {
-  // ojo: aquí debe ir “paciente”, no paciente_id
-  paciente:    pid,
-  comentarios: diagForm.comentarios.value,
-  cirugia:     diagForm.cirugia.checked
-};
+  const payload = {
+    paciente:    pid,                  // debe llamar "paciente"
+    comentarios: diagForm.comentarios.value,
+    cirugia:     diagForm.cirugia.checked
+  };
 
+  console.log("Enviando payload:", payload);
+  const res = await fetch(`${DIAG_API}diagnosticos/`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload),
+  });
 
-      try {
-        const res = await fetch(`${DIAG_API}diagnosticos/`, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error(`Status ${res.status}`);
-        diagMsg.style.color = 'green';
-        diagMsg.textContent = 'Diagnóstico guardado ✅';
-        diagForm.reset();
-      } catch(err) {
-        diagMsg.style.color = 'red';
-        diagMsg.textContent = 'Error guardando diagnóstico: ' + err.message;
-      }
-    });
+  if (!res.ok) {
+    console.error("Response status:", res.status);
+    const err = await res.json().catch(()=>null);
+    console.error("Response body:", err);
+    diagMsg.style.color = 'red';
+    diagMsg.textContent = 'Error guardando diagnóstico: ' + (err ? JSON.stringify(err) : res.status);
+    return;
+  }
+
+  diagMsg.style.color = 'green';
+  diagMsg.textContent = 'Diagnóstico guardado ✅';
+  diagForm.reset();
+});
+
   </script>
 </body>
 </html>
