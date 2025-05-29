@@ -9,7 +9,7 @@
         header { background-color: #4287db; color:#fff; padding:20px; text-align:center; }
         .content { padding:40px; text-align:center; }
         .section { margin: 20px 0; }
-        label, select, input { display:block; width:100%; margin:10px 0; font-size:1em; }
+        label, select { display:block; width:100%; margin:10px 0; font-size:1em; }
         select { padding:8px; border:1px solid #ccc; border-radius:4px; }
         .gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 20px; }
         .image-card { background:#fff; border-radius:6px; box-shadow:0 2px 5px rgba(0,0,0,0.1); padding:10px; width:150px; }
@@ -37,15 +37,17 @@
     </div>
 
     <script>
-    // CONFIGURA aquí la base de tu API de PACIENTES (que te da la lista de pacientes)
-    const PAT_API = "{{ API_BASE }}";
-    // CONFIGURA aquí la base del microservicio de IMÁGENES (puede ser igual o distinto)
-    const IMG_API = "{{ API_UPLOAD }}";
+    // Base para pacientes e imágenes (inyectadas desde tu view)
+    const PAT_API = "{{ API_BASE }}".replace(/\/+$/, "") + "/";     // e.g. http://.../registro/
+    const IMG_API = "{{ API_UPLOAD }}".replace(/\/+$/, "") + "/";   // e.g. http://.../
 
-    // 1. Cargar lista de pacientes
-    const select  = document.getElementById('paciente');
+    // 1. Carga lista de pacientes
+    const select = document.getElementById('paciente');
     fetch(`${PAT_API}pacientes/`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`Status ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         select.innerHTML = '<option value="">Seleccione un paciente…</option>';
         data.results.forEach(p => {
@@ -60,48 +62,47 @@
         console.error('Error al obtener pacientes:', err);
       });
 
-    // 2. Cuando selecciono un paciente, cargo sus imágenes
-    select.addEventListener('change', function() {
-      const pacienteId = this.value;
-      const gallery = document.getElementById('gallery');
-      const msg     = document.getElementById('gallery-message');
+    // 2. Cuando seleccionas un paciente, cargo sus imágenes
+    select.addEventListener('change', () => {
+      const pacienteId = select.value;
+      const gallery    = document.getElementById('gallery');
+      const msg        = document.getElementById('gallery-message');
       gallery.innerHTML = '';
-      msg.textContent = '';
+      msg.textContent   = '';
+
       if (!pacienteId) {
         msg.textContent = 'Seleccione un paciente para ver sus imágenes.';
         return;
       }
       msg.textContent = 'Cargando imágenes...';
 
-      // GET imágenes de ese paciente
-      fetch(`${IMG_API}/pacientes/${pacienteId}/imagenes/`)
+      fetch(`${IMG_API}pacientes/${pacienteId}/imagenes/`)
         .then(res => {
-          if (!res.ok) throw new Error("No se pudo consultar el microservicio de imágenes");
+          if (!res.ok) throw new Error(`Status ${res.status}`);
           return res.json();
         })
         .then(imagenes => {
-          gallery.innerHTML = '';
-          if (!imagenes.length) {
+          if (imagenes.length === 0) {
             msg.textContent = 'No hay imágenes para este paciente.';
             return;
           }
           msg.textContent = '';
           imagenes.forEach(img => {
-            // Opcional: puedes agregar ver/descargar en una nueva pestaña
-            const imgUrl = `${IMG_API}/imagenes/${img.id}/`;
+            // URL real de la imagen reconstruida en el otro microservicio
+            const imgUrl = `${IMG_API}imagenes/${img.id}/descargar/`;
             gallery.innerHTML += `
               <div class="image-card">
-                <a href="#" onclick="window.open('${imgUrl}', '_blank'); return false;">
-                  <img src="${imgUrl}" alt="Imagen examen">
+                <a href="${imgUrl}" target="_blank">
+                  <img src="${imgUrl}" alt="Examen ${img.filename || img.id}">
                 </a>
-                <div class="meta">${img.filename ?? 'Sin nombre'}</div>
+                <div class="meta">${img.filename || 'Sin nombre'}</div>
                 <div class="meta">${img.uploaded_at ? img.uploaded_at.split('T')[0] : ''}</div>
               </div>
             `;
           });
         })
         .catch(err => {
-          msg.textContent = 'Error cargando imágenes: ' + err;
+          msg.textContent = 'Error cargando imágenes: ' + err.message;
         });
     });
     </script>

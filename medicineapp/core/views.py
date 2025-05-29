@@ -132,10 +132,9 @@ def historia_actualizar(request):
 
 @csrf_exempt
 def combined_view(request):
-    """
-    Página de diagnóstico que carga datos combinados desde el microservicio GCP vía AJAX.
-    """
     return render(request, 'core/combined.html', {
-        'SERVER3_URL': settings.SERVER3_URL
+        'API_BASE': settings.SERVER2_URL,
+        'API_UPLOAD': settings.SERVER1_URL.rstrip('/') + '/',
     })
+
 
