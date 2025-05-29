@@ -74,7 +74,7 @@
       msg.textContent = 'Cargando imágenes...';
 
       // GET imágenes de ese paciente
-      fetch(`${IMG_API}pacientes/${pacienteId}/imagenes/`)
+      fetch(`${IMG_API}/pacientes/${pacienteId}/imagenes/`)
         .then(res => {
           if (!res.ok) throw new Error("No se pudo consultar el microservicio de imágenes");
           return res.json();
@@ -88,7 +88,7 @@
           msg.textContent = '';
           imagenes.forEach(img => {
             // Opcional: puedes agregar ver/descargar en una nueva pestaña
-            const imgUrl = `${IMG_API}imagenes/${img.id}/`;
+            const imgUrl = `${IMG_API}/imagenes/${img.id}/`;
             gallery.innerHTML += `
               <div class="image-card">
                 <a href="#" onclick="window.open('${imgUrl}', '_blank'); return false;">
